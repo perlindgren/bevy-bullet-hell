@@ -9,6 +9,12 @@ Just a POC for now. No hit-boxes, yet. Not sure whether to go as long as there w
 - Left stick for steering
 - Right stick for aiming
 - Shoot with any back button, bring it on!!!!
+
+```shell
+cargo run --release
+```
+
+Takes < 3% CPU on my oldish laptop, so seems fairly efficient. Not that it currently does much.
   
 ## To Debug
 
