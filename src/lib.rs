@@ -1,4 +1,5 @@
+pub mod block;
 pub mod common;
 pub mod gamepad;
-pub mod map;
-pub mod target;
+pub mod player;
+pub mod shooting;

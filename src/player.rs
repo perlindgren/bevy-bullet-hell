@@ -21,7 +21,7 @@ pub struct DeltaResource {
 }
 
 #[derive(Resource, Default)]
-pub struct PositionResource {
+pub struct PlayerResource {
     pub player_pos: Vec2,
     pub aim_pos: Vec2,
 }
@@ -30,7 +30,7 @@ pub fn update_system(
     time: Res<Time>,
 
     dr: Res<DeltaResource>,
-    mut pr: ResMut<PositionResource>,
+    mut pr: ResMut<PlayerResource>,
     mut player_query: Query<&mut Transform, With<PlayerComponent>>,
     mut cross_query: Query<&mut Transform, (With<CrossComponent>, Without<PlayerComponent>)>,
 
@@ -41,6 +41,8 @@ pub fn update_system(
 
     pr.player_pos += dr.player_delta * PLAYER_SPEED * time.delta_seconds();
     pr.aim_pos = pr.player_pos + dr.aim_delta * 500.0;
+
+    pr.player_pos = pr.player_pos.clamp(SCREEN_MIN, SCREEN_MAX);
 
     pt.translation.x = pr.player_pos.x;
     pt.translation.y = pr.player_pos.y;
@@ -54,7 +56,7 @@ pub fn update_system(
 
 pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(DeltaResource::default());
-    commands.insert_resource(PositionResource::default());
+    commands.insert_resource(PlayerResource::default());
     commands.spawn((
         PlayerComponent,
         SpriteBundle {

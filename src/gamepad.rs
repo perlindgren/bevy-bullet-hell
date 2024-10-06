@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::target::DeltaResource;
+use crate::{player::DeltaResource, shooting::ShotEvent};
 
 pub fn update_system(
     gamepads: Res<Gamepads>,
@@ -8,10 +8,12 @@ pub fn update_system(
     button_inputs: Res<ButtonInput<GamepadButton>>,
     // button_axes: Res<Axis<GamepadButton>>,
     axes: Res<Axis<GamepadAxis>>,
+    mut fire_lazer_ew: EventWriter<ShotEvent>,
 ) {
     for gamepad in gamepads.iter() {
         if button_inputs.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger)) {
             debug!("{:?} just pressed LeftTrigger", gamepad);
+            fire_lazer_ew.send(ShotEvent);
         }
 
         if button_inputs.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger2))
