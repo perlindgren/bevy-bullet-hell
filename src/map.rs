@@ -4,12 +4,26 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 
-#[derive(Component)]
-pub struct Rotate(f32);
+use rand::random;
 
-pub fn update_system(time: Res<Time>, mut rect_query: Query<(&mut Transform, &Rotate)>) {
-    for (mut transform, Rotate(rotate)) in rect_query.iter_mut() {
-        transform.rotate_z(*rotate * time.delta_seconds() * ROTATION_SPEED);
+#[derive(Component)]
+pub struct Block {
+    rotation: f32,
+    speed: Vec2,
+}
+
+pub fn update_system(time: Res<Time>, mut rect_query: Query<(&mut Transform, &mut Block)>) {
+    for (mut transform, mut block) in rect_query.iter_mut() {
+        transform.rotate_z(block.rotation * time.delta_seconds() * BLOCK_ROTATION_SPEED);
+        let trans: Vec3 =
+            transform.translation + block.speed.extend(0.0) * time.delta_seconds() * BLOCKS_SPEED;
+        if trans.x < -HALF_WIDTH || trans.x > HALF_WIDTH {
+            block.speed.x *= -1.0;
+        }
+        if trans.y < -HALF_HEIGHT || trans.y > HALF_HEIGHT {
+            block.speed.y *= -1.0;
+        }
+        transform.translation = trans;
     }
 }
 
@@ -20,27 +34,24 @@ pub fn setup(
 ) {
     let shape = Mesh2dHandle(meshes.add(Rectangle::new(50.0, 100.0)));
 
-    let color = Color::linear_rgba(1.0, 0.0, 0.0, 1.0);
-    let color2 = Color::linear_rgba(0.0, 1.0, 0.0, 1.0);
+    for i in 0..10 {
+        let color = Color::linear_rgba(random(), random(), random(), 1.0);
+        commands.spawn((
+            Block {
+                rotation: random(),
+                speed: ((random::<f32>() - 0.5), (random::<f32>() - 0.5)).into(),
+            },
+            MaterialMesh2dBundle {
+                mesh: shape.clone(),
+                material: materials.add(color),
+                transform: Transform::from_xyz(
+                    (random::<f32>() - 0.5) * HALF_WIDTH,
+                    (random::<f32>() - 0.5) * HALF_HEIGHT,
+                    1.0 + i as f32, // different z to avoid flicker
+                ),
 
-    commands.spawn((
-        Rotate(-0.025),
-        MaterialMesh2dBundle {
-            mesh: shape.clone(),
-            material: materials.add(color),
-            transform: Transform::from_xyz(200.0, 100.0, 0.0),
-
-            ..default()
-        },
-    ));
-
-    commands.spawn((
-        Rotate(0.05),
-        MaterialMesh2dBundle {
-            mesh: shape,
-            material: materials.add(color2),
-            transform: Transform::from_xyz(-200.0, 100.0, 0.0),
-            ..default()
-        },
-    ));
+                ..default()
+            },
+        ));
+    }
 }

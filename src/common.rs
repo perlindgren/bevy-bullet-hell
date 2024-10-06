@@ -9,4 +9,5 @@ pub const HALF_WIDTH: f32 = RES_X / 2.0;
 
 pub const PLAYER_SPEED: f32 = 400.0;
 
-pub const ROTATION_SPEED: f32 = 100.0;
+pub const BLOCK_ROTATION_SPEED: f32 = 10.0;
+pub const BLOCKS_SPEED: f32 = 400.0;
