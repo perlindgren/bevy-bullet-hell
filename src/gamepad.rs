@@ -12,25 +12,28 @@ pub fn update_system(
 ) {
     for gamepad in gamepads.iter() {
         if button_inputs.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger)) {
-            debug!("{:?} just pressed LeftTrigger", gamepad);
+            trace!("{:?} just pressed LeftTrigger", gamepad);
             fire_lazer_ew.send(ShotEvent);
         }
 
         if button_inputs.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger2))
         {
-            debug!("{:?} just pressed LeftTrigger2", gamepad);
+            trace!("{:?} just pressed LeftTrigger2", gamepad);
+            fire_lazer_ew.send(ShotEvent);
         }
 
         if button_inputs.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::RightTrigger))
         {
-            debug!("{:?} just pressed RightTrigger", gamepad);
+            trace!("{:?} just pressed RightTrigger", gamepad);
+            fire_lazer_ew.send(ShotEvent);
         }
 
         if button_inputs.just_pressed(GamepadButton::new(
             gamepad,
             GamepadButtonType::RightTrigger2,
         )) {
-            debug!("{:?} just pressed RightTrigger2 ", gamepad);
+            trace!("{:?} just pressed RightTrigger2 ", gamepad);
+            fire_lazer_ew.send(ShotEvent);
         }
 
         // let right_trigger = button_axes
