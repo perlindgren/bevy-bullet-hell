@@ -1,5 +1,5 @@
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, window::WindowResolution};
-use bevy_bullet_hell::{common::*, gamepad, target};
+use bevy_bullet_hell::{common::*, gamepad, map, target};
 
 fn setup(mut commands: Commands) {
     // we might want to setup a custom camera, for now just default
@@ -20,7 +20,14 @@ fn main() {
         }))
         .add_plugins(FrameTimeDiagnosticsPlugin)
         .insert_resource(ClearColor(Color::BLACK))
-        .add_systems(Startup, (setup, target::setup).chain())
-        .add_systems(Update, (gamepad::update_system, target::update_system))
+        .add_systems(Startup, (setup, target::setup, map::setup).chain())
+        .add_systems(
+            Update,
+            (
+                gamepad::update_system,
+                target::update_system,
+                map::update_system,
+            ),
+        )
         .run();
 }

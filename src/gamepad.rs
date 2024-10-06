@@ -1,25 +1,35 @@
 use bevy::prelude::*;
 
 use crate::target::DeltaResource;
-#[derive(Resource)]
-pub struct GamepadResource {
-    pos: Vec2,
-}
 
 pub fn update_system(
     gamepads: Res<Gamepads>,
     mut target_resource: ResMut<DeltaResource>,
-    // button_inputs: Res<ButtonInput<GamepadButton>>,
+    button_inputs: Res<ButtonInput<GamepadButton>>,
     // button_axes: Res<Axis<GamepadButton>>,
     axes: Res<Axis<GamepadAxis>>,
 ) {
     for gamepad in gamepads.iter() {
-        // if button_inputs.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::South)) {
-        //     trace!("{:?} just pressed South", gamepad);
-        // } else if button_inputs.just_released(GamepadButton::new(gamepad, GamepadButtonType::South))
-        // {
-        //     trace!("{:?} just released South", gamepad);
-        // }
+        if button_inputs.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger)) {
+            debug!("{:?} just pressed LeftTrigger", gamepad);
+        }
+
+        if button_inputs.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger2))
+        {
+            debug!("{:?} just pressed LeftTrigger2", gamepad);
+        }
+
+        if button_inputs.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::RightTrigger))
+        {
+            debug!("{:?} just pressed RightTrigger", gamepad);
+        }
+
+        if button_inputs.just_pressed(GamepadButton::new(
+            gamepad,
+            GamepadButtonType::RightTrigger2,
+        )) {
+            debug!("{:?} just pressed RightTrigger2 ", gamepad);
+        }
 
         // let right_trigger = button_axes
         //     .get(GamepadButton::new(
