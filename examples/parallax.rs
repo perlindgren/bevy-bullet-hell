@@ -16,7 +16,7 @@ fn startup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let tilemap_entity = commands.spawn_empty().id();
 
     fill_tilemap(
-        TileTextureIndex(0),
+        TileTextureIndex(1),
         map_size,
         TilemapId(tilemap_entity),
         &mut commands,
