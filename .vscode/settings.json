@@ -1,7 +1,3 @@
 {
-  "cSpell.ignoreWords": [
-    "despawn",
-    "gamepad",
-    "gamepads"
-  ]
+  "cSpell.ignoreWords": ["Tilemap", "despawn", "gamepad", "gamepads"]
 }
