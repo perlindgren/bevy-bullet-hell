@@ -1,5 +1,5 @@
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, window::WindowResolution};
-use bevy_bullet_hell::{block, common::*, gamepad, player, shooting};
+use bevy_bullet_hell::{block, common::*, gamepad, overlay, player, shooting};
 
 fn setup(mut commands: Commands) {
     // we might want to setup a custom camera, for now just default
@@ -23,7 +23,14 @@ fn main() {
         .add_event::<shooting::ShotEvent>()
         .add_systems(
             Startup,
-            (setup, player::setup, block::setup, shooting::setup).chain(),
+            (
+                setup,
+                overlay::setup,
+                player::setup,
+                block::setup,
+                shooting::setup,
+            )
+                .chain(),
         )
         .add_systems(
             Update,
@@ -33,6 +40,7 @@ fn main() {
                     player::update_system,
                     block::update_system,
                     shooting::update_system,
+                    overlay::fps_update_system,
                 )
                     .before(shooting::new_shot_system),
                 (shooting::new_shot_system),

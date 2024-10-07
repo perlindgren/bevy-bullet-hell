@@ -30,3 +30,5 @@ pub const BLOCK_ROTATION_SPEED: f32 = 10.0;
 pub const BLOCKS_SPEED: f32 = 400.0;
 
 pub const SHOT_SPEED: f32 = 600.0;
+
+pub const STATUS_BAR_FONT_SIZE: f32 = 50.0;
