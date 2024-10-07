@@ -1,4 +1,5 @@
 use crate::common::*;
+use avian2d::prelude::*;
 use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
@@ -17,11 +18,18 @@ pub fn update_system(time: Res<Time>, mut rect_query: Query<(&mut Transform, &mu
         transform.rotate_z(block.rotation * time.delta_seconds() * BLOCK_ROTATION_SPEED);
         let trans: Vec3 =
             transform.translation + block.speed.extend(0.0) * time.delta_seconds() * BLOCKS_SPEED;
-        if trans.x < -HALF_WIDTH || trans.x > HALF_WIDTH {
-            block.speed.x *= -1.0;
-        }
-        if trans.y < -HALF_HEIGHT || trans.y > HALF_HEIGHT {
-            block.speed.y *= -1.0;
+        if trans.x < -HALF_WIDTH {
+            block.speed.x = block.speed.x.abs();
+            debug!("bounce left");
+        } else if trans.x > HALF_WIDTH {
+            block.speed.x = -block.speed.x.abs();
+            debug!("bounce right");
+        } else if trans.y < -HALF_HEIGHT {
+            block.speed.y = block.speed.y.abs();
+            debug!("bounce bottom");
+        } else if trans.y > HALF_HEIGHT {
+            block.speed.y = -block.speed.y.abs();
+            debug!("bounce top");
         }
         transform.translation = trans;
     }
@@ -36,6 +44,8 @@ pub fn setup(
 
     for i in 0..10 {
         let color = Color::linear_rgba(random(), random(), random(), 1.0);
+        let x = (random::<f32>() - 0.5) * HALF_WIDTH;
+        let y = (random::<f32>() - 0.5) * HALF_HEIGHT;
         commands.spawn((
             Block {
                 rotation: random(),
@@ -45,13 +55,15 @@ pub fn setup(
                 mesh: shape.clone(),
                 material: materials.add(color),
                 transform: Transform::from_xyz(
-                    (random::<f32>() - 0.5) * HALF_WIDTH,
-                    (random::<f32>() - 0.5) * HALF_HEIGHT,
+                    x,
+                    y,
                     1.0 + i as f32, // different z to avoid flicker
                 ),
 
                 ..default()
             },
+            RigidBody::Dynamic,
+            Collider::rectangle(50.0, 100.0),
         ));
     }
 }

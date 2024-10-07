@@ -1,5 +1,6 @@
+use avian2d::prelude::*;
 use bevy::{
-    color::palettes::css::{GREEN, RED},
+    color::palettes::css::{GREEN, RED, WHITE},
     prelude::*,
 };
 
@@ -50,17 +51,32 @@ pub fn update_system(
     ct.translation.x = pr.aim_pos.x;
     ct.translation.y = pr.aim_pos.y;
 
-    // gizmos.line_2d(pr.player_pos, pr.aim_pos, RED);
     gizmos.line_gradient_2d(pr.player_pos, pr.aim_pos, RED, GREEN);
+}
+
+pub fn collider_system(mut query: Query<(&mut Sprite, &CollidingEntities), With<PlayerComponent>>) {
+    for (mut sprite, colliding_entities) in &mut query {
+        if colliding_entities.0.is_empty() {
+            sprite.color = WHITE.into();
+        } else {
+            debug!("--- collision with player ---");
+            sprite.color = RED.into();
+        }
+    }
 }
 
 pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(DeltaResource::default());
     commands.insert_resource(PlayerResource::default());
+
     commands.spawn((
         PlayerComponent,
+        RigidBody::Dynamic,
+        Collider::rectangle(10.0, 10.0),
+        Sensor,
         SpriteBundle {
             texture: asset_server.load("sprites/cross.png"),
+            transform: Transform::from_xyz(0.0, 0.0, 100.0),
             ..default()
         },
     ));

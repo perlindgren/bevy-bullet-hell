@@ -29,7 +29,7 @@ pub fn setup(mut commands: Commands) {
         ])
         .with_style(Style {
             position_type: PositionType::Absolute,
-            top: Val::Px(60.0),
+            top: Val::Px(15.0),
             left: Val::Px(15.0),
             ..default()
         }),

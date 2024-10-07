@@ -1,6 +1,10 @@
+use avian2d::prelude::*;
 use bevy::prelude::*;
 
-use crate::{common::*, player::PlayerResource};
+use crate::{
+    common::*,
+    player::{PlayerComponent, PlayerResource},
+};
 
 #[derive(Event)]
 pub struct ShotEvent;
@@ -38,6 +42,9 @@ pub fn new_shot_system(
                 ),
                 ..default()
             },
+            Collider::rectangle(10.0, 10.0),
+            Sensor,
+            RigidBody::Dynamic,
         ));
     }
 }
@@ -54,6 +61,24 @@ pub fn update_system(
         if !SCREEN_RECT.contains((transform.translation.x, transform.translation.y).into()) {
             debug!("despawn");
             commands.entity(entity).despawn();
+        }
+    }
+}
+
+pub fn collider_system(
+    mut commands: Commands,
+    player_query: Query<Entity, With<PlayerComponent>>,
+    mut collision_query: Query<(Entity, &CollidingEntities), With<ShotComponent>>,
+) {
+    let player_entity = player_query.single();
+
+    for (shot_entity, colliding_entities) in &mut collision_query {
+        for entity in colliding_entities.iter() {
+            if *entity != player_entity {
+                trace!("hit target");
+                commands.entity(shot_entity).despawn();
+                commands.entity(*entity).despawn();
+            }
         }
     }
 }

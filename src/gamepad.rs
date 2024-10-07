@@ -12,19 +12,19 @@ pub fn update_system(
 ) {
     for gamepad in gamepads.iter() {
         if button_inputs.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger)) {
-            trace!("{:?} just pressed LeftTrigger", gamepad);
+            debug!("{:?} just pressed LeftTrigger", gamepad);
             fire_lazer_ew.send(ShotEvent);
         }
 
         if button_inputs.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger2))
         {
-            trace!("{:?} just pressed LeftTrigger2", gamepad);
+            debug!("{:?} just pressed LeftTrigger2", gamepad);
             fire_lazer_ew.send(ShotEvent);
         }
 
         if button_inputs.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::RightTrigger))
         {
-            trace!("{:?} just pressed RightTrigger", gamepad);
+            debug!("{:?} just pressed RightTrigger", gamepad);
             fire_lazer_ew.send(ShotEvent);
         }
 
@@ -32,7 +32,7 @@ pub fn update_system(
             gamepad,
             GamepadButtonType::RightTrigger2,
         )) {
-            trace!("{:?} just pressed RightTrigger2 ", gamepad);
+            debug!("{:?} just pressed RightTrigger2 ", gamepad);
             fire_lazer_ew.send(ShotEvent);
         }
 
