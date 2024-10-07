@@ -6,9 +6,6 @@ use bevy::{
 
 use crate::common::*;
 
-#[derive(Event)]
-pub struct FireLazerEvent;
-
 #[derive(Component)]
 pub struct PlayerComponent;
 
@@ -79,6 +76,7 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             transform: Transform::from_xyz(0.0, 0.0, 100.0),
             ..default()
         },
+        MassPropertiesBundle::new_computed(&Collider::rectangle(10.0, 10.0), 1.0),
     ));
 
     commands.spawn((

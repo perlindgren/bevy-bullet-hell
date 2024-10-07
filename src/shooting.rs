@@ -43,6 +43,7 @@ pub fn new_shot_system(
                 ..default()
             },
             Collider::rectangle(10.0, 10.0),
+            MassPropertiesBundle::new_computed(&Collider::rectangle(10.0, 10.0), 1.0),
             Sensor,
             RigidBody::Dynamic,
         ));
