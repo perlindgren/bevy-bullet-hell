@@ -1,3 +1,5 @@
+// Standard ui, using the PrimaryWindow
+
 use avian2d::{math::*, prelude::*};
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, window::WindowResolution};
 use bevy_bullet_hell::{

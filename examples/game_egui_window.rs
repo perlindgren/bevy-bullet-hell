@@ -1,3 +1,5 @@
+// Custom ui in separate window.
+
 use avian2d::{math::*, prelude::*};
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, window::WindowResolution};
 use bevy_bullet_hell::{block, camera, common::*, gamepad, overlay, player, shooting, tile, ui};
