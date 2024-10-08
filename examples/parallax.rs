@@ -2,7 +2,7 @@ use bevy::{math::Vec3, prelude::*, render::camera::Camera};
 use bevy_ecs_tilemap::prelude::*;
 
 #[derive(Component)]
-struct Layer(u8);
+pub struct Layer(pub u8);
 
 fn startup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
@@ -84,8 +84,8 @@ fn startup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 // we assume camera is at layer 1, layer 0 is the background and layer 3 and above is above
 
-fn parallax_update_system(
-    time: Res<Time>,
+pub fn parallax_update_system(
+    _time: Res<Time>,
     camera_query: Query<&Transform, With<Camera>>,
     mut layer_query: Query<(&mut Transform, &Layer), Without<Camera>>,
 ) {
@@ -139,7 +139,7 @@ pub fn camera_update_system(
         ortho.scale = 0.5;
     }
 
-    let z = transform.translation.z;
+    let _z = transform.translation.z;
 
     let delta = time.delta_seconds() * direction * 500.;
     transform.translation += delta;
@@ -172,13 +172,6 @@ fn main() {
         )
         .add_plugins(TilemapPlugin)
         .add_systems(Startup, startup)
-        .add_systems(
-            Update,
-            (
-                //parallax_update_system,
-                camera_update_system
-            )
-                .chain(),
-        )
+        .add_systems(Update, (camera_update_system).chain())
         .run();
 }

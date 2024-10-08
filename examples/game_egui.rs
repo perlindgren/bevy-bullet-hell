@@ -4,7 +4,6 @@ use bevy_bullet_hell::player::PlayerResource;
 use bevy_bullet_hell::{block, camera, common::*, gamepad, overlay, player, shooting, tile};
 use bevy_ecs_tilemap::prelude::*;
 
-use bevy::prelude::*;
 use bevy_inspector_egui::prelude::*;
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 
