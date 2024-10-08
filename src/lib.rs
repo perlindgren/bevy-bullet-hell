@@ -6,3 +6,4 @@ pub mod overlay;
 pub mod player;
 pub mod shooting;
 pub mod tile;
+pub mod ui;
