@@ -18,15 +18,31 @@ Some rough game ideas, combining shooter/looter, bullet-hell, boss-battles, spee
   - The goal is to as fast as possible eliminate all enemies (without dying/taking damage etc. for additional bonuses).
   - Spawn rate and enemy difficulty scales with level.
   - Enemies (might) drop lives, health pills, ammo, weapons, time reduction, etc.
-  - You can hold only two weapons and a shield, picking up new weapons replace the currently held. 
+  - You can hold only a limited set of weapons, picking up new gear replace the currently held if not empty handed.
   - Only held weapons are kept, so pick wisely before leaving arena.
   - Kept loot goes to persistent chest available between arenas.
   - Load-out can be chosen from chest.
   - When entering an arena you can choose difficulty among individually unlocked arena levels (no-pain, no-gain for a reason).
   
+- Weapon system:
+  - Aim with right stick, distance shown indicate target on throw or radious for EMG like weapons.
+  - L1 fire left hand weapon, hold for charge
+  - L2 select left weapon,
+  - R1 fire right hand weapon, hold for charge
+  - R2 select right weapon
+
+  You have a limited set of slots, starting from a single slot when when born, upgrading over time by opening chests.
+
+- Weapons:
+  - Melee style, short range, lots of damage at high risc of colliding. You may charge an attack either aimed or round house by right stick.
+  - Thrown, bombs or EMG like (radius based), position/radius selected by right stick.
+  - Shoot, lazer/gun/arrow like. Direction set by aim point. Range determined by weapon type/charging.
+  
 - Speed running:
-  - As mentioned each arena has timing goals for each arena per level. Additionally, there will be an on-line ranking system to match your score against fellow players worldwide.
-- Roguelite challenge, start from Arena 1, Level 1, and try to reach as far as possible in one run. Challenges comes in different flavours, ranging from exploratory (starting with 3 lives and a bag of healing pills) to ultimate instant kill (take any damage and you have to start all over again).
+  As mentioned each arena has timing goals for each arena per level. Additionally, there will be an on-line ranking system to match your score against fellow players worldwide.
+
+- Roguelite challenge:
+   Start from Arena 1, Level 1, and try to reach as far as possible in one run. Challenges comes in different flavours, ranging from exploratory (starting with 3 lives and a bag of healing pills) to ultimate instant kill (take any damage and you have to start all over again).
 
 So far:
 
