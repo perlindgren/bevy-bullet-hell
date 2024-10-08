@@ -55,11 +55,11 @@ So far:
 
 ## Playing
 
-Just a POC for now. No hit-boxes, yet. Not sure whether to go as long as there will be lots of bullets its gonna be fine.
-
 - Left stick for steering
 - Right stick for aiming
-- Shoot with any back button, bring it on!!!!
+- Shoot with any back button, bring it on!!!! 
+
+(For now no weapon selection.)
 
 ```shell
 cargo run --release
