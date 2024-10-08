@@ -26,12 +26,14 @@ Some rough game ideas, combining shooter/looter, bullet-hell, boss-battles, spee
   
 - Weapon system:
   - Aim with right stick, distance shown indicate target on throw or radious for EMG like weapons.
-  - L1 fire left hand weapon, hold for charge
-  - L2 select left weapon,
-  - R1 fire right hand weapon, hold for charge
-  - R2 select right weapon
+  - L1 fire left hand weapon, hold for charge, fire on release, abort by pressing L2.
+  - L2 select left weapon.
+  - R1 fire right hand weapon, hold for charge, fire on release, abort by pressing L2.
+  - R2 select right weapon.
 
-  You have a limited set of slots, starting from a single slot when when born, upgrading over time by opening chests.
+  Weapon selection from a slot circle where the right stick angle determines selection.
+
+  You have a limited set of weapon slots, starting from a single slot when when born, upgrading over time by opening chests.
 
 - Weapons:
   - Melee style, short range, lots of damage at high risc of colliding. You may charge an attack either aimed or round house by right stick.
