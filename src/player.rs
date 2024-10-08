@@ -4,6 +4,9 @@ use bevy::{
     prelude::*,
 };
 
+use bevy_inspector_egui::prelude::*;
+// use bevy_inspector_egui::quick::ResourceInspectorPlugin;
+
 use crate::common::*;
 
 #[derive(Component)]
@@ -18,7 +21,8 @@ pub struct DeltaResource {
     pub aim_delta: Vec2,
 }
 
-#[derive(Resource, Default)]
+#[derive(Reflect, Resource, Default, InspectorOptions)]
+#[reflect(Resource, InspectorOptions)]
 pub struct PlayerResource {
     pub player_pos: Vec2,
     pub aim_pos: Vec2,
