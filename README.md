@@ -77,4 +77,4 @@ RUST_LOG=bevy_bullet_hell=debug cargo run --release
 
 ## License
 
-Free to play, server access might be restricted to 
+To be determined.
