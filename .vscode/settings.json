@@ -1,11 +1,13 @@
 {
   "cSpell.ignoreWords": [
+    "NPNG",
     "Roguelite",
     "Tilemap",
     "despawn",
     "egui",
     "gamepad",
     "gamepads",
-    "lazer"
+    "lazer",
+    "replayability"
   ]
 }
