@@ -25,7 +25,7 @@ Some rough game ideas, combining shooter/looter, bullet-hell, boss-battles, spee
   - When entering an arena you can choose difficulty among individually unlocked arena levels (no-pain, no-gain for a reason).
   
 - Weapon system:
-  - Aim with right stick, distance shown indicate target on throw or radious for EMG like weapons.
+  - Aim with right stick, distance shown indicate target on throw or radius for EMG like weapons.
   - L1 fire left hand weapon, hold for charge, fire on release, abort by pressing L2.
   - L2 select left weapon.
   - R1 fire right hand weapon, hold for charge, fire on release, abort by pressing L2.
