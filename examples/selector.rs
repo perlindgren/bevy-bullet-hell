@@ -1,16 +1,19 @@
 use bevy::{
     color::palettes::css,
     prelude::*,
+    render::view::visibility,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 use std::f32::consts::{PI, TAU};
+
+use bevy_bullet_hell::common::*;
 
 struct Weapon {
     image: Handle<Image>,
 }
 
 #[derive(Resource, Default)]
-struct WeaponsResource {
+pub struct WeaponsResource {
     weapons: Vec<Weapon>,
 }
 
@@ -27,13 +30,16 @@ pub fn weapon_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 #[derive(Component)]
-struct Selector(u8);
+pub struct Selector(u8);
 
 #[derive(Component)]
-struct SelectorIcon;
+pub struct SelectorIcon;
+
+#[derive(Component)]
+pub struct SelectorText(Hand);
 
 #[derive(Resource, Default)]
-struct SelectorResource {
+pub struct SelectorResource {
     weapons: Vec<usize>, // index to the weapon
     current_left: Option<u8>,
     current_right: Option<u8>,
@@ -90,7 +96,7 @@ fn selector_spawn(
         .into();
 
         let angle = (i as f32) * TAU / nr_weapons;
-        let weapon = weapons_r.weapons[*weapons];
+        let weapon = &weapons_r.weapons[*weapons];
 
         // TODO, here we might want to use a component with children instead
         commands.spawn((
@@ -115,112 +121,160 @@ fn selector_spawn(
             },
         ));
     }
+    commands.spawn((
+        SelectorText(hand),
+        TextBundle::from_section(
+            match hand {
+                Hand::Left => "Left Weapon/Ability",
+                Hand::Right => "Right Weapon/Ability",
+            },
+            TextStyle {
+                font_size: SELECTOR_FONT_SIZE,
+                color: SELECTOR_TEXT_COLOR.into(),
+                ..default()
+            },
+        )
+        .with_style(Style {
+            position_type: PositionType::Absolute,
+            top: Val::Px(5.0),
+            left: Val::Px(15.0),
+            align_self: AlignSelf::Center,
+            ..default()
+        }),
+    ));
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn selector_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut selector_r: ResMut<SelectorResource>,
     weapons_r: Res<WeaponsResource>,
-    mut selector_q: Query<Entity, With<Selector>>,
-    mut selector_icon_q: Query<Entity, With<SelectorIcon>>,
+    mut selector_q: Query<(Entity, &mut Visibility), With<Selector>>,
+    selector_icon_q: Query<Entity, With<SelectorIcon>>,
+    selector_text_q: Query<(Entity, &SelectorText), With<SelectorText>>,
 
     gamepads: Res<Gamepads>,
-    mut segment_r: ResMut<SelectorResource>,
+    // segment_r: ResMut<SelectorResource>,
     button_inputs: Res<ButtonInput<GamepadButton>>,
     axes: Res<Axis<GamepadAxis>>,
 ) {
     for gamepad in gamepads.iter() {
-        // spawn left selector
+        // spawn new selector only if no selector is shown
+        if selector_q.is_empty() {
+            let spawn = if button_inputs
+                .just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger2))
+            {
+                trace!("{:?} just pressed LeftTrigger2", gamepad);
+                Some(Hand::Left)
+            } else if button_inputs.just_pressed(GamepadButton::new(
+                gamepad,
+                GamepadButtonType::RightTrigger2,
+            )) {
+                trace!("{:?} just pressed RightTrigger2", gamepad);
+                Some(Hand::Right)
+            } else {
+                None
+            };
 
-        let spawn = if button_inputs
-            .just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger2))
-        {
-            debug!("{:?} just pressed LeftTrigger2", gamepad);
-            Some(Hand::Left)
-        } else if button_inputs.just_pressed(GamepadButton::new(
-            gamepad,
-            GamepadButtonType::RightTrigger2,
-        )) {
-            debug!("{:?} just pressed RightTrigger2", gamepad);
-            Some(Hand::Right)
+            // spawn selector
+            if let Some(hand) = spawn {
+                debug!("spawn {:?}", hand);
+                selector_spawn(
+                    &mut commands,
+                    &mut meshes,
+                    &mut materials,
+                    &weapons_r,
+                    &selector_r,
+                    hand,
+                );
+            }
         } else {
-            None
-        };
+            let (text_entity, SelectorText(hand)) = selector_text_q.single();
+            let despawn = match hand {
+                Hand::Left => {
+                    if button_inputs
+                        .just_released(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger2))
+                    {
+                        trace!("{:?} just released LeftTrigger2", gamepad);
+                        Some(Hand::Left)
+                    } else {
+                        None
+                    }
+                }
+                Hand::Right => {
+                    if button_inputs.just_released(GamepadButton::new(
+                        gamepad,
+                        GamepadButtonType::RightTrigger2,
+                    )) {
+                        trace!("{:?} just released RightTrigger2", gamepad);
+                        Some(Hand::Right)
+                    } else {
+                        None
+                    }
+                }
+            };
 
-        // despawn left selector
-        let despawn = if button_inputs
-            .just_released(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger2))
-        {
-            debug!("{:?} just released LeftTrigger2", gamepad);
-            Some(Hand::Left)
-        } else if button_inputs.just_released(GamepadButton::new(
-            gamepad,
-            GamepadButtonType::RightTrigger2,
-        )) {
-            debug!("{:?} just released RightTrigger2", gamepad);
-            Some(Hand::Right)
-        } else {
-            None
-        };
+            // right stick control
+            let right_stick_x = axes
+                .get(GamepadAxis::new(gamepad, GamepadAxisType::RightStickX))
+                .unwrap();
+            let x = if right_stick_x.abs() > 0.01 {
+                trace!("{:?} RightStickX value is {}", gamepad, right_stick_x);
+                right_stick_x
+            } else {
+                0.0
+            };
+            let right_stick_y = axes
+                .get(GamepadAxis::new(gamepad, GamepadAxisType::RightStickY))
+                .unwrap();
+            let y = if right_stick_y.abs() > 0.01 {
+                trace!("{:?} RightStickY value is {}", gamepad, right_stick_y);
+                right_stick_y
+            } else {
+                0.0
+            };
 
-        // spawn selector
-        if let Some(hand) = spawn {
-            debug!("spawn {:?}", hand);
-            selector_spawn(
-                &mut commands,
-                &mut meshes,
-                &mut materials,
-                &weapons_r,
-                &selector_r,
-                hand,
-            );
-        }
+            // None if no weapon is selected
+            let selected = if x != 0.0 || y != 0.0 {
+                let seg = segment(x, y, selector_r.weapons.len());
+                println!("in segment {}", seg);
+                Some(seg)
+            } else {
+                None
+            };
 
-        // right stick control
-        let right_stick_x = axes
-            .get(GamepadAxis::new(gamepad, GamepadAxisType::RightStickX))
-            .unwrap();
-        let x = if right_stick_x.abs() > 0.01 {
-            trace!("{:?} RightStickX value is {}", gamepad, right_stick_x);
-            right_stick_x
-        } else {
-            0.0
-        };
-        let right_stick_y = axes
-            .get(GamepadAxis::new(gamepad, GamepadAxisType::RightStickY))
-            .unwrap();
-        let y = if right_stick_y.abs() > 0.01 {
-            trace!("{:?} RightStickY value is {}", gamepad, right_stick_y);
-            right_stick_y
-        } else {
-            0.0
-        };
-
-        // None if no weapon is selected
-        let selected = if x != 0.0 || y != 0.0 {
-            let seg = segment(x, y, selector_r.weapons.len());
-            println!("in segment {}", seg);
-            Some(seg)
-        } else {
-            None
-        };
-
-        if let Some(hand) = despawn {
-            // update selector only if some selection is made on release
-            if let Some(seg) = selected {
-                match hand {
-                    Hand::Left => selector_r.current_left = Some(seg),
-                    Hand::Right => selector_r.current_right = Some(seg),
+            for (i, (selector, mut visibility)) in selector_q.iter_mut().enumerate() {
+                match selected {
+                    Some(seg) => {
+                        *visibility = if seg == i as u8 {
+                            Visibility::Visible
+                        } else {
+                            Visibility::Hidden
+                        }
+                    }
+                    None => *visibility = Visibility::Hidden,
                 }
             }
-            // despawn selector
-            for entity in selector_q.iter() {
-                commands.entity(entity).despawn();
-            }
-            for entity in selector_icon_q.iter() {
-                commands.entity(entity).despawn();
+
+            if let Some(hand) = despawn {
+                // update selector only if some selection is made on release
+                if let Some(seg) = selected {
+                    match hand {
+                        Hand::Left => selector_r.current_left = Some(seg),
+                        Hand::Right => selector_r.current_right = Some(seg),
+                    }
+                }
+                // despawn selector
+                for (entity, _) in selector_q.iter() {
+                    commands.entity(entity).despawn();
+                }
+                for entity in selector_icon_q.iter() {
+                    commands.entity(entity).despawn();
+                }
+
+                commands.entity(text_entity).despawn();
             }
         }
     }
@@ -269,9 +323,12 @@ fn segment(x: f32, y: f32, nr_segs: usize) -> u8 {
 
     let segment = nr_segs as f32 * angle / TAU;
     let segment_round = segment.round();
-    debug!(
+    trace!(
         "nr_segs {}, angle {}, div {}, div round {}",
-        nr_segs, angle, segment, segment_round
+        nr_segs,
+        angle,
+        segment,
+        segment_round
     );
     segment_round as u8 % nr_segs as u8
 }
