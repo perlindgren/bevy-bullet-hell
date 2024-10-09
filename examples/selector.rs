@@ -10,20 +10,20 @@ struct Weapon {
 }
 
 #[derive(Resource, Default)]
-struct Weapons {
+struct WeaponsResource {
     weapons: Vec<Weapon>,
 }
 
 pub fn weapon_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let mut weapons = vec![];
 
-    for _ in 0..3 {
+    for _ in 0..4 {
         weapons.push(Weapon {
             image: asset_server.load("sprites/cross.png"),
         })
     }
 
-    commands.insert_resource(Weapons { weapons });
+    commands.insert_resource(WeaponsResource { weapons });
 }
 
 #[derive(Component)]
@@ -35,29 +35,62 @@ struct SelectorIcon;
 #[derive(Resource, Default)]
 struct SelectorResource {
     weapons: Vec<usize>, // index to the weapon
+    current_left: Option<u8>,
+    current_right: Option<u8>,
 }
 
 pub fn selector_setup(mut commands: Commands) {
-    commands.insert_resource(SelectorResource {
-        weapons: vec![0, 1, 2, 3],
+    commands.insert_resource({
+        let weapons = vec![0, 1, 2, 3];
+        SelectorResource {
+            weapons: vec![0, 1, 2, 3],
+            current_left: Some(weapons[0]),
+            current_right: None,
+        }
     });
+}
+
+#[derive(Copy, Clone, Debug)]
+enum Hand {
+    Left,
+    Right,
 }
 
 fn selector_spawn(
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
     materials: &mut Assets<ColorMaterial>,
-    weapons_r: &Weapons,
+    weapons_r: &WeaponsResource,
+    selector_r: &SelectorResource,
+    hand: Hand,
 ) {
-    let nr_weapons = weapons_r.weapons.len() as f32;
+    let nr_weapons = selector_r.weapons.len() as f32;
 
-    for (i, Weapon { image }) in weapons_r.weapons.iter().enumerate() {
+    for (i, weapons) in selector_r.weapons.iter().enumerate() {
         let shape =
             Mesh2dHandle(meshes.add(CircularSector::from_radians(100.0, 0.95 * TAU / nr_weapons)));
         println!("i {}", i);
 
-        let color: Color = css::DIM_GRAY.into();
+        let weapon_held = match hand {
+            Hand::Left => selector_r.current_left,
+            Hand::Right => selector_r.current_right,
+        };
+
+        let color: Color = {
+            if let Some(w) = weapon_held {
+                if w == i as u8 {
+                    css::DARK_GRAY
+                } else {
+                    css::DIM_GRAY
+                }
+            } else {
+                css::DIM_GRAY
+            }
+        }
+        .into();
+
         let angle = (i as f32) * TAU / nr_weapons;
+        let weapon = weapons_r.weapons[*weapons];
 
         // TODO, here we might want to use a component with children instead
         commands.spawn((
@@ -74,7 +107,7 @@ fn selector_spawn(
         commands.spawn((
             SelectorIcon,
             SpriteBundle {
-                texture: image.clone(),
+                texture: weapon.image.clone(),
                 transform: Transform::from_translation(
                     (50.0 * angle.sin(), 50.0 * angle.cos(), 12.0).into(),
                 ),
@@ -88,7 +121,8 @@ pub fn selector_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    weapons_r: Res<Weapons>,
+    mut selector_r: ResMut<SelectorResource>,
+    weapons_r: Res<WeaponsResource>,
     mut selector_q: Query<Entity, With<Selector>>,
     mut selector_icon_q: Query<Entity, With<SelectorIcon>>,
 
@@ -98,49 +132,96 @@ pub fn selector_system(
     axes: Res<Axis<GamepadAxis>>,
 ) {
     for gamepad in gamepads.iter() {
-        // spawn selector
-        if button_inputs.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger2))
+        // spawn left selector
+
+        let spawn = if button_inputs
+            .just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger2))
         {
             debug!("{:?} just pressed LeftTrigger2", gamepad);
-            selector_spawn(&mut commands, &mut meshes, &mut materials, &weapons_r);
-        }
+            Some(Hand::Left)
+        } else if button_inputs.just_pressed(GamepadButton::new(
+            gamepad,
+            GamepadButtonType::RightTrigger2,
+        )) {
+            debug!("{:?} just pressed RightTrigger2", gamepad);
+            Some(Hand::Right)
+        } else {
+            None
+        };
 
-        // despawn selector
-        if button_inputs.just_released(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger2))
+        // despawn left selector
+        let despawn = if button_inputs
+            .just_released(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger2))
         {
             debug!("{:?} just released LeftTrigger2", gamepad);
+            Some(Hand::Left)
+        } else if button_inputs.just_released(GamepadButton::new(
+            gamepad,
+            GamepadButtonType::RightTrigger2,
+        )) {
+            debug!("{:?} just released RightTrigger2", gamepad);
+            Some(Hand::Right)
+        } else {
+            None
+        };
+
+        // spawn selector
+        if let Some(hand) = spawn {
+            debug!("spawn {:?}", hand);
+            selector_spawn(
+                &mut commands,
+                &mut meshes,
+                &mut materials,
+                &weapons_r,
+                &selector_r,
+                hand,
+            );
+        }
+
+        // right stick control
+        let right_stick_x = axes
+            .get(GamepadAxis::new(gamepad, GamepadAxisType::RightStickX))
+            .unwrap();
+        let x = if right_stick_x.abs() > 0.01 {
+            trace!("{:?} RightStickX value is {}", gamepad, right_stick_x);
+            right_stick_x
+        } else {
+            0.0
+        };
+        let right_stick_y = axes
+            .get(GamepadAxis::new(gamepad, GamepadAxisType::RightStickY))
+            .unwrap();
+        let y = if right_stick_y.abs() > 0.01 {
+            trace!("{:?} RightStickY value is {}", gamepad, right_stick_y);
+            right_stick_y
+        } else {
+            0.0
+        };
+
+        // None if no weapon is selected
+        let selected = if x != 0.0 || y != 0.0 {
+            let seg = segment(x, y, selector_r.weapons.len());
+            println!("in segment {}", seg);
+            Some(seg)
+        } else {
+            None
+        };
+
+        if let Some(hand) = despawn {
+            // update selector only if some selection is made on release
+            if let Some(seg) = selected {
+                match hand {
+                    Hand::Left => selector_r.current_left = Some(seg),
+                    Hand::Right => selector_r.current_right = Some(seg),
+                }
+            }
+            // despawn selector
             for entity in selector_q.iter() {
                 commands.entity(entity).despawn();
             }
             for entity in selector_icon_q.iter() {
                 commands.entity(entity).despawn();
             }
-        }
-
-        if segment_r.weapons.len() > 0 {
-            // right stick control
-            let right_stick_x = axes
-                .get(GamepadAxis::new(gamepad, GamepadAxisType::RightStickX))
-                .unwrap();
-            let x = if right_stick_x.abs() > 0.01 {
-                trace!("{:?} RightStickX value is {}", gamepad, right_stick_x);
-                right_stick_x
-            } else {
-                0.0
-            };
-            let right_stick_y = axes
-                .get(GamepadAxis::new(gamepad, GamepadAxisType::RightStickY))
-                .unwrap();
-            let y = if right_stick_y.abs() > 0.01 {
-                trace!("{:?} RightStickY value is {}", gamepad, right_stick_y);
-                right_stick_y
-            } else {
-                0.0
-            };
-
-            let nr_segs = segment_r.weapons.len();
-
-            println!("in segment {}", segment(x, y, nr_segs));
         }
     }
 
@@ -183,14 +264,16 @@ pub fn selector_system(
 }
 
 #[inline(always)]
-fn segment(x: f32, y: f32, nr_segs: usize) -> usize {
+fn segment(x: f32, y: f32, nr_segs: usize) -> u8 {
     let angle = 1.5 * PI + y.atan2(x);
-    debug!("angle {}", angle);
 
     let segment = nr_segs as f32 * angle / TAU;
     let segment_round = segment.round();
-    debug!("div {}, div round {}", segment, segment_round);
-    segment_round as usize % nr_segs
+    debug!(
+        "nr_segs {}, angle {}, div {}, div round {}",
+        nr_segs, angle, segment, segment_round
+    );
+    segment_round as u8 % nr_segs as u8
 }
 
 fn setup(mut commands: Commands) {
@@ -209,7 +292,7 @@ fn main() {
 mod test {
     use super::*;
 
-    fn test_segment(s: &str, x: f32, y: f32, nr_segs: usize, expected: usize) {
+    fn test_segment(s: &str, x: f32, y: f32, nr_segs: usize, expected: u8) {
         let seg = segment(x, y, nr_segs);
         println!("{}, segment {}\n", s, seg);
         assert_eq!(seg, expected);
