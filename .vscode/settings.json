@@ -3,6 +3,7 @@
     "NPNG",
     "Roguelite",
     "Tilemap",
+    "consts",
     "despawn",
     "egui",
     "gamepad",

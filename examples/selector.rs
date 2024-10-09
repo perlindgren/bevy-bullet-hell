@@ -5,8 +5,6 @@ use bevy::{
 };
 use std::f32::consts::{PI, TAU};
 
-const X_EXTENT: f32 = 900.;
-
 struct Weapon {
     image: Handle<Image>,
 }
@@ -141,24 +139,8 @@ pub fn selector_system(
             };
 
             let nr_segs = segment_r.weapons.len();
-            let angle = y.atan2(x) + PI; // + 2.0 * PI; //  * (1.0 + 1.0 / nr_segs as f32));
 
-            // 0 degree pointing at (1, 0)
-            debug!("x {}, y {}, angle {:?}", x, y, angle);
-
-            fn check_in_segment(angle: f32, nr_segs: usize) -> usize {
-                // check which segment the angle belongs to
-                for i in 0..nr_segs {
-                    let seg_end = TAU * (0.5 + i as f32) / nr_segs as f32;
-                    debug!("{i} {}", seg_end);
-
-                    if angle < seg_end {
-                        return i;
-                    }
-                }
-                0
-            }
-            println!("in segment {}", check_in_segment(angle, nr_segs));
+            println!("in segment {}", segment(x, y, nr_segs));
         }
     }
 
@@ -200,6 +182,17 @@ pub fn selector_system(
     // }
 }
 
+#[inline(always)]
+fn segment(x: f32, y: f32, nr_segs: usize) -> usize {
+    let angle = 1.5 * PI + y.atan2(x);
+    debug!("angle {}", angle);
+
+    let segment = nr_segs as f32 * angle / TAU;
+    let segment_round = segment.round();
+    debug!("div {}, div round {}", segment, segment_round);
+    segment_round as usize % nr_segs
+}
+
 fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
@@ -213,4 +206,42 @@ fn main() {
 }
 
 #[cfg(test)]
-mod test {}
+mod test {
+    use super::*;
+
+    fn test_segment(s: &str, x: f32, y: f32, nr_segs: usize, expected: usize) {
+        let seg = segment(x, y, nr_segs);
+        println!("{}, segment {}\n", s, seg);
+        assert_eq!(seg, expected);
+    }
+    #[test]
+    fn test_segmentation() {
+        test_segment("right", 1.0, 0.0, 4, 3);
+        test_segment("right right up", 1.0, 0.5, 4, 3);
+        test_segment("right up", 1.0, 1.0, 4, 3);
+
+        test_segment("right up up", 0.5, 1.0, 4, 0);
+        test_segment("up ", 0.0, 1.0, 4, 0);
+        test_segment("left up up ", -0.5, 1.0, 4, 0);
+
+        test_segment("left up", -1.0, 1.0, 4, 1);
+        test_segment("left left up", -1.0, 0.5, 4, 1);
+        test_segment("left ", -1.0, 0.0, 4, 1);
+        test_segment("left left down", -1.0, -0.5, 4, 1);
+
+        test_segment("left down", -1.0, -1.0, 4, 2);
+        test_segment("left down down", -0.5, -1.0, 4, 2);
+        test_segment("down", 0.0, -1.0, 4, 2);
+        test_segment("down down right", 0.5, -1.0, 4, 2);
+
+        test_segment("down right", 1.0, -1.0, 4, 3);
+        test_segment("down right right", 1.0, -0.5, 4, 3);
+
+        test_segment("right", 1.0, 0.0, 2, 0);
+        test_segment("right right up", 1.0, 0.5, 2, 0);
+        test_segment("up", 0.0, 1.0, 2, 0);
+        test_segment("left left up", -1.0, 0.5, 2, 0);
+
+        test_segment("left", -1.0, 0.0, 2, 1);
+    }
+}
