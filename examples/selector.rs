@@ -36,6 +36,9 @@ pub struct Selector(u8);
 pub struct SelectorIcon;
 
 #[derive(Component)]
+pub struct SelectorActive;
+
+#[derive(Component)]
 pub struct SelectorText(Hand);
 
 #[derive(Resource, Default)]
@@ -75,7 +78,6 @@ fn selector_spawn(
     for (i, weapons) in selector_r.weapons.iter().enumerate() {
         let shape =
             Mesh2dHandle(meshes.add(CircularSector::from_radians(100.0, 0.95 * TAU / nr_weapons)));
-        println!("i {}", i);
 
         let weapon_held = match hand {
             Hand::Left => selector_r.current_left,
@@ -121,6 +123,20 @@ fn selector_spawn(
             },
         ));
     }
+
+    let shape = Mesh2dHandle(meshes.add(CircularSector::from_radians(90.0, 0.0)));
+    let color: Color = css::ALICE_BLUE.into();
+    commands.spawn((
+        SelectorActive,
+        MaterialMesh2dBundle {
+            mesh: shape,
+            material: materials.add(
+                color, //    .with_alpha(0.5)
+            ),
+            transform: Transform::from_xyz(0.0, 0.0, 20.0),
+            ..default()
+        },
+    ));
     commands.spawn((
         SelectorText(hand),
         TextBundle::from_section(
@@ -245,18 +261,18 @@ pub fn selector_system(
                 None
             };
 
-            for (i, (selector, mut visibility)) in selector_q.iter_mut().enumerate() {
-                match selected {
-                    Some(seg) => {
-                        *visibility = if seg == i as u8 {
-                            Visibility::Visible
-                        } else {
-                            Visibility::Hidden
-                        }
-                    }
-                    None => *visibility = Visibility::Hidden,
-                }
-            }
+            // for (i, (selector, mut visibility)) in selector_q.iter_mut().enumerate() {
+            //     match selected {
+            //         Some(seg) => {
+            //             *visibility = if seg == i as u8 {
+            //                 Visibility::Visible
+            //             } else {
+            //                 Visibility::Hidden
+            //             }
+            //         }
+            //         None => *visibility = Visibility::Hidden,
+            //     }
+            // }
 
             if let Some(hand) = despawn {
                 // update selector only if some selection is made on release
