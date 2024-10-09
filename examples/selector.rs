@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
-use std::f32::consts::TAU;
+use std::f32::consts::{PI, TAU};
 
 const X_EXTENT: f32 = 900.;
 
@@ -29,7 +29,10 @@ pub fn weapon_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 #[derive(Component)]
-struct Selector;
+struct Selector(u8);
+
+#[derive(Component)]
+struct SelectorIcon;
 
 #[derive(Resource, Default)]
 struct SelectorResource {
@@ -38,14 +41,14 @@ struct SelectorResource {
 
 pub fn selector_setup(mut commands: Commands) {
     commands.insert_resource(SelectorResource {
-        weapons: vec![0, 1, 3],
+        weapons: vec![0, 1, 2, 3],
     });
 }
 
 fn selector_spawn(
-    mut commands: &mut Commands,
-    mut meshes: &mut Assets<Mesh>,
-    mut materials: &mut Assets<ColorMaterial>,
+    commands: &mut Commands,
+    meshes: &mut Assets<Mesh>,
+    materials: &mut Assets<ColorMaterial>,
     weapons_r: &Weapons,
 ) {
     let nr_weapons = weapons_r.weapons.len() as f32;
@@ -60,7 +63,7 @@ fn selector_spawn(
 
         // TODO, here we might want to use a component with children instead
         commands.spawn((
-            Selector,
+            Selector(i as u8),
             MaterialMesh2dBundle {
                 mesh: shape,
                 material: materials.add(color),
@@ -71,7 +74,7 @@ fn selector_spawn(
         ));
 
         commands.spawn((
-            Selector,
+            SelectorIcon,
             SpriteBundle {
                 texture: image.clone(),
                 transform: Transform::from_translation(
@@ -89,6 +92,7 @@ pub fn selector_system(
     mut materials: ResMut<Assets<ColorMaterial>>,
     weapons_r: Res<Weapons>,
     mut selector_q: Query<Entity, With<Selector>>,
+    mut selector_icon_q: Query<Entity, With<SelectorIcon>>,
 
     gamepads: Res<Gamepads>,
     mut segment_r: ResMut<SelectorResource>,
@@ -110,6 +114,51 @@ pub fn selector_system(
             for entity in selector_q.iter() {
                 commands.entity(entity).despawn();
             }
+            for entity in selector_icon_q.iter() {
+                commands.entity(entity).despawn();
+            }
+        }
+
+        if segment_r.weapons.len() > 0 {
+            // right stick control
+            let right_stick_x = axes
+                .get(GamepadAxis::new(gamepad, GamepadAxisType::RightStickX))
+                .unwrap();
+            let x = if right_stick_x.abs() > 0.01 {
+                trace!("{:?} RightStickX value is {}", gamepad, right_stick_x);
+                right_stick_x
+            } else {
+                0.0
+            };
+            let right_stick_y = axes
+                .get(GamepadAxis::new(gamepad, GamepadAxisType::RightStickY))
+                .unwrap();
+            let y = if right_stick_y.abs() > 0.01 {
+                trace!("{:?} RightStickY value is {}", gamepad, right_stick_y);
+                right_stick_y
+            } else {
+                0.0
+            };
+
+            let nr_segs = segment_r.weapons.len();
+            let angle = y.atan2(x) + PI; // + 2.0 * PI; //  * (1.0 + 1.0 / nr_segs as f32));
+
+            // 0 degree pointing at (1, 0)
+            debug!("x {}, y {}, angle {:?}", x, y, angle);
+
+            fn check_in_segment(angle: f32, nr_segs: usize) -> usize {
+                // check which segment the angle belongs to
+                for i in 0..nr_segs {
+                    let seg_end = TAU * (0.5 + i as f32) / nr_segs as f32;
+                    debug!("{i} {}", seg_end);
+
+                    if angle < seg_end {
+                        return i;
+                    }
+                }
+                0
+            }
+            println!("in segment {}", check_in_segment(angle, nr_segs));
         }
     }
 
@@ -128,26 +177,6 @@ pub fn selector_system(
     //     )) {
     //         debug!("{:?} just pressed RightTrigger2 ", gamepad);
     //     }
-
-    //     // right stick control
-    //     let right_stick_x = axes
-    //         .get(GamepadAxis::new(gamepad, GamepadAxisType::RightStickX))
-    //         .unwrap();
-    //     target_resource.aim_delta.x = if right_stick_x.abs() > 0.01 {
-    //         trace!("{:?} RightStickX value is {}", gamepad, right_stick_x);
-    //         right_stick_x
-    //     } else {
-    //         0.0
-    //     };
-    //     let right_stick_y = axes
-    //         .get(GamepadAxis::new(gamepad, GamepadAxisType::RightStickY))
-    //         .unwrap();
-    //     target_resource.aim_delta.y = if right_stick_y.abs() > 0.01 {
-    //         trace!("{:?} RightStickY value is {}", gamepad, right_stick_y);
-    //         right_stick_y
-    //     } else {
-    //         0.0
-    //     };
 
     //     // left stick control
     //     let left_stick_x = axes
@@ -177,8 +206,11 @@ fn setup(mut commands: Commands) {
 
 fn main() {
     let mut app = App::new();
-    app.add_plugins((DefaultPlugins))
+    app.add_plugins(DefaultPlugins)
         .add_systems(Startup, (setup, weapon_setup, selector_setup).chain())
         .add_systems(Update, selector_system);
     app.run();
 }
+
+#[cfg(test)]
+mod test {}
