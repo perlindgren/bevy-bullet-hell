@@ -3,33 +3,13 @@ use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
+
 use std::f32::consts::{PI, TAU};
 
-use bevy_bullet_hell::common::*;
-
-struct Weapon {
-    image: Handle<Image>,
-}
-
-#[derive(Resource, Default)]
-pub struct WeaponsResource {
-    weapons: Vec<Weapon>,
-}
-
-pub fn weapon_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let mut weapons = vec![];
-
-    for _ in 0..4 {
-        weapons.push(Weapon {
-            image: asset_server.load("sprites/cross.png"),
-        })
-    }
-
-    commands.insert_resource(WeaponsResource { weapons });
-}
+use crate::{common::*, weapon::WeaponsResource};
 
 #[derive(Component)]
-pub struct Selector(u8);
+pub struct Selector;
 
 #[derive(Component)]
 pub struct SelectorIcon;
@@ -42,17 +22,20 @@ pub struct SelectorText(Hand);
 
 #[derive(Resource, Default)]
 pub struct SelectorResource {
-    weapons: Vec<usize>, // index to the weapon
+    weapons: Vec<u8>, // index to the weapon
     current_left: Option<u8>,
     current_right: Option<u8>,
 }
 
-pub fn selector_setup(mut commands: Commands) {
+// setup system
+// for now hard coded to 4 weapons on the selection wheel
+// wheel starts empty
+pub fn setup(mut commands: Commands) {
+    let weapons = vec![0u8, 1, 2, 3];
     commands.insert_resource({
-        let weapons = vec![0, 1, 2, 3];
         SelectorResource {
-            weapons: vec![0, 1, 2, 3],
-            current_left: Some(weapons[0]),
+            weapons,
+            current_left: None,
             current_right: None,
         }
     });
@@ -97,11 +80,11 @@ fn selector_spawn(
         .into();
 
         let angle = (i as f32) * TAU / nr_weapons;
-        let weapon = &weapons_r.weapons[*weapons];
+        let weapon = &weapons_r.weapons[*weapons as usize];
 
         // TODO, here we might want to use a component with children instead
         commands.spawn((
-            Selector(i as u8),
+            Selector,
             MaterialMesh2dBundle {
                 mesh: shape,
                 material: materials.add(color),
@@ -163,13 +146,13 @@ fn selector_spawn(
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn selector_system(
+pub fn update_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut selector_r: ResMut<SelectorResource>,
     weapons_r: Res<WeaponsResource>,
-    mut selector_q: Query<Entity, With<Selector>>,
+    selector_q: Query<Entity, With<Selector>>,
     selector_icon_q: Query<Entity, With<SelectorIcon>>,
     selector_text_q: Query<(Entity, &SelectorText), With<SelectorText>>,
     mut selector_segment_q: Query<(Entity, &mut Visibility, &mut Transform), With<SelectorSegment>>,
@@ -259,7 +242,7 @@ pub fn selector_system(
 
             // None if no weapon is selected
             let selected = if x != 0.0 || y != 0.0 {
-                let seg = segment(x, y, selector_r.weapons.len());
+                let seg = segment(x, y, selector_r.weapons.len() as u8);
                 debug!("in segment {}", seg);
                 Some(seg)
             } else {
@@ -280,6 +263,7 @@ pub fn selector_system(
                 None => Visibility::Hidden,
             };
 
+            // despawn selector (either Left or Right)
             if let Some(hand) = despawn {
                 debug!("despawn {:?}", hand);
                 // update selector only if some selection is made on release
@@ -305,7 +289,7 @@ pub fn selector_system(
 }
 
 #[inline(always)]
-fn segment(x: f32, y: f32, nr_segs: usize) -> u8 {
+fn segment(x: f32, y: f32, nr_segs: u8) -> u8 {
     let angle = 1.5 * PI + y.atan2(x);
 
     let segment = nr_segs as f32 * angle / TAU;
@@ -320,23 +304,11 @@ fn segment(x: f32, y: f32, nr_segs: usize) -> u8 {
     segment_round as u8 % nr_segs as u8
 }
 
-fn setup(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
-}
-
-fn main() {
-    let mut app = App::new();
-    app.add_plugins(DefaultPlugins)
-        .add_systems(Startup, (setup, weapon_setup, selector_setup).chain())
-        .add_systems(Update, selector_system);
-    app.run();
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
 
-    fn test_segment(s: &str, x: f32, y: f32, nr_segs: usize, expected: u8) {
+    fn test_segment(s: &str, x: f32, y: f32, nr_segs: u8, expected: u8) {
         let seg = segment(x, y, nr_segs);
         println!("{}, segment {}\n", s, seg);
         assert_eq!(seg, expected);

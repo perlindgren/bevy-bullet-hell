@@ -4,6 +4,8 @@ pub mod common;
 pub mod gamepad;
 pub mod overlay;
 pub mod player;
+pub mod selector;
 pub mod shooting;
 pub mod tile;
 pub mod ui;
+pub mod weapon;

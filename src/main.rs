@@ -1,6 +1,8 @@
 use avian2d::{math::*, prelude::*};
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, window::WindowResolution};
-use bevy_bullet_hell::{block, camera, common::*, gamepad, overlay, player, shooting, tile, ui};
+use bevy_bullet_hell::{
+    block, camera, common::*, gamepad, overlay, player, selector, shooting, tile, ui, weapon,
+};
 use bevy_ecs_tilemap::prelude::*;
 use bevy_inspector_egui::DefaultInspectorConfigPlugin;
 
@@ -43,6 +45,8 @@ fn main() {
                 shooting::setup,
                 tile::setup,
                 ui::setup,
+                weapon::setup,
+                selector::setup,
             )
                 .chain(),
         )
@@ -59,6 +63,7 @@ fn main() {
                 overlay::fps_update_system,
                 camera::update_system,
                 ui::update_system,
+                selector::update_system,
             )
                 .chain(),
         )
