@@ -33,5 +33,5 @@ pub const SHOT_SPEED: f32 = 600.0;
 
 pub const STATUS_BAR_FONT_SIZE: f32 = 50.0;
 
-pub const SELECTOR_FONT_SIZE: f32 = 50.0;
+pub const SELECTOR_FONT_SIZE: f32 = 30.0;
 pub const SELECTOR_TEXT_COLOR: Srgba = css::WHITE_SMOKE;

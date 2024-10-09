@@ -6,7 +6,7 @@ use bevy::{
 
 use std::f32::consts::{PI, TAU};
 
-use crate::{common::*, weapon::WeaponsResource};
+use crate::{common::*, player::PlayerResource, weapon::WeaponsResource};
 
 #[derive(Component)]
 pub struct Selector;
@@ -48,6 +48,7 @@ enum Hand {
 }
 
 fn selector_spawn(
+    pos: Vec2,
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
     materials: &mut Assets<ColorMaterial>,
@@ -88,7 +89,7 @@ fn selector_spawn(
             MaterialMesh2dBundle {
                 mesh: shape,
                 material: materials.add(color),
-                transform: Transform::from_xyz(0.0, 0.0, 10.0)
+                transform: Transform::from_xyz(pos.x, pos.y, 100.0)
                     .with_rotation(Quat::from_axis_angle(Vec3::Z, angle)),
                 ..default()
             },
@@ -99,7 +100,12 @@ fn selector_spawn(
             SpriteBundle {
                 texture: weapon.image.clone(),
                 transform: Transform::from_translation(
-                    (50.0 * angle.sin(), 50.0 * angle.cos(), 12.0).into(),
+                    (
+                        50.0 * angle.sin() + pos.x,
+                        50.0 * angle.cos() + pos.y,
+                        102.0,
+                    )
+                        .into(),
                 ),
                 ..default()
             },
@@ -117,31 +123,30 @@ fn selector_spawn(
             material: materials.add(
                 color, //.with_alpha(0.1)
             ),
-            transform: Transform::from_xyz(0.0, 0.0, 11.0),
+            transform: Transform::from_xyz(pos.x, pos.y, 101.0),
             visibility: Visibility::Hidden,
             ..default()
         },
     ));
+
     commands.spawn((
         SelectorText(hand),
-        TextBundle::from_section(
-            match hand {
-                Hand::Left => "Left Weapon/Ability",
-                Hand::Right => "Right Weapon/Ability",
-            },
-            TextStyle {
-                font_size: SELECTOR_FONT_SIZE,
-                color: SELECTOR_TEXT_COLOR.into(),
-                ..default()
-            },
-        )
-        .with_style(Style {
-            position_type: PositionType::Absolute,
-            top: Val::Px(5.0),
-            left: Val::Px(15.0),
-            align_self: AlignSelf::Center,
+        Text2dBundle {
+            text: Text::from_section(
+                match hand {
+                    Hand::Left => "Left",
+                    Hand::Right => "Right",
+                },
+                TextStyle {
+                    font_size: SELECTOR_FONT_SIZE,
+                    color: SELECTOR_TEXT_COLOR.into(),
+                    ..default()
+                },
+            )
+            .with_justify(JustifyText::Center),
+            transform: Transform::from_xyz(pos.x, pos.y, 103.0),
             ..default()
-        }),
+        },
     ));
 }
 
@@ -152,6 +157,7 @@ pub fn update_system(
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut selector_r: ResMut<SelectorResource>,
     weapons_r: Res<WeaponsResource>,
+    player_r: Res<PlayerResource>,
     selector_q: Query<Entity, With<Selector>>,
     selector_icon_q: Query<Entity, With<SelectorIcon>>,
     selector_text_q: Query<(Entity, &SelectorText), With<SelectorText>>,
@@ -186,6 +192,7 @@ pub fn update_system(
             if let Some(hand) = spawn {
                 debug!("spawn {:?}", hand);
                 selector_spawn(
+                    player_r.player_pos,
                     &mut commands,
                     &mut meshes,
                     &mut materials,
