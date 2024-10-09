@@ -37,7 +37,7 @@ Some rough game ideas, combining shooter/looter, bullet-hell, boss-battles, spee
   You have a limited set of weapon slots, starting from a single slot when when born, upgrading over time by opening chests.
 
 - Weapons:
-  - Melee style, short range, lots of damage at high risc of colliding. You may charge an attack either aimed or round house by right stick.
+  - Melee style, short range, lots of damage at high risk of colliding. You may charge an attack either aimed or round house by right stick.
   - Thrown, bombs or EMG like (radius based), position/radius selected by right stick.
   - Shoot, lazer/gun/arrow like. Direction set by aim point. Range determined by weapon type/charging.
 - Speed running:
