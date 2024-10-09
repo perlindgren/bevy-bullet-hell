@@ -36,7 +36,7 @@ pub struct Selector(u8);
 pub struct SelectorIcon;
 
 #[derive(Component)]
-pub struct SelectorActive;
+pub struct SelectorSegment;
 
 #[derive(Component)]
 pub struct SelectorText(Hand);
@@ -124,16 +124,19 @@ fn selector_spawn(
         ));
     }
 
-    let shape = Mesh2dHandle(meshes.add(CircularSector::from_radians(90.0, 0.0)));
-    let color: Color = css::ALICE_BLUE.into();
+    let shape =
+        Mesh2dHandle(meshes.add(CircularSector::from_radians(80.0, 0.95 * TAU / nr_weapons)));
+
+    let color: Color = css::DARK_SLATE_GRAY.into();
     commands.spawn((
-        SelectorActive,
+        SelectorSegment,
         MaterialMesh2dBundle {
             mesh: shape,
             material: materials.add(
-                color, //    .with_alpha(0.5)
+                color, //.with_alpha(0.1)
             ),
-            transform: Transform::from_xyz(0.0, 0.0, 20.0),
+            transform: Transform::from_xyz(0.0, 0.0, 11.0),
+            visibility: Visibility::Hidden,
             ..default()
         },
     ));
@@ -167,15 +170,18 @@ pub fn selector_system(
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut selector_r: ResMut<SelectorResource>,
     weapons_r: Res<WeaponsResource>,
-    mut selector_q: Query<(Entity, &mut Visibility), With<Selector>>,
+    mut selector_q: Query<Entity, With<Selector>>,
     selector_icon_q: Query<Entity, With<SelectorIcon>>,
     selector_text_q: Query<(Entity, &SelectorText), With<SelectorText>>,
+    mut selector_segment_q: Query<(Entity, &mut Visibility, &mut Transform), With<SelectorSegment>>,
 
     gamepads: Res<Gamepads>,
     // segment_r: ResMut<SelectorResource>,
     button_inputs: Res<ButtonInput<GamepadButton>>,
     axes: Res<Axis<GamepadAxis>>,
 ) {
+    let nr_weapons = selector_r.weapons.len() as f32;
+
     for gamepad in gamepads.iter() {
         // spawn new selector only if no selector is shown
         if selector_q.is_empty() {
@@ -255,26 +261,28 @@ pub fn selector_system(
             // None if no weapon is selected
             let selected = if x != 0.0 || y != 0.0 {
                 let seg = segment(x, y, selector_r.weapons.len());
-                println!("in segment {}", seg);
+                debug!("in segment {}", seg);
                 Some(seg)
             } else {
                 None
             };
 
-            // for (i, (selector, mut visibility)) in selector_q.iter_mut().enumerate() {
-            //     match selected {
-            //         Some(seg) => {
-            //             *visibility = if seg == i as u8 {
-            //                 Visibility::Visible
-            //             } else {
-            //                 Visibility::Hidden
-            //             }
-            //         }
-            //         None => *visibility = Visibility::Hidden,
-            //     }
-            // }
+            // Set selector
+            let (segment_entity, mut segment_visibility, mut segment_transform) =
+                selector_segment_q.single_mut();
+
+            *segment_visibility = match selected {
+                Some(seg) => {
+                    let angle = (seg as f32) * TAU / nr_weapons;
+                    let rotation = Quat::from_axis_angle(Vec3::Z, angle);
+                    segment_transform.rotation = rotation;
+                    Visibility::Visible
+                }
+                None => Visibility::Hidden,
+            };
 
             if let Some(hand) = despawn {
+                debug!("despawn {:?}", hand);
                 // update selector only if some selection is made on release
                 if let Some(seg) = selected {
                     match hand {
@@ -283,54 +291,18 @@ pub fn selector_system(
                     }
                 }
                 // despawn selector
-                for (entity, _) in selector_q.iter() {
+                for entity in selector_q.iter() {
                     commands.entity(entity).despawn();
                 }
                 for entity in selector_icon_q.iter() {
                     commands.entity(entity).despawn();
                 }
 
+                commands.entity(segment_entity).despawn();
                 commands.entity(text_entity).despawn();
             }
         }
     }
-
-    // if button_inputs.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::LeftTrigger)) {
-    //     debug!("{:?} just pressed LeftTrigger", gamepad);
-    // }
-
-    //     if button_inputs.just_pressed(GamepadButton::new(gamepad, GamepadButtonType::RightTrigger))
-    //     {
-    //         debug!("{:?} just pressed RightTrigger", gamepad);
-    //     }
-
-    //     if button_inputs.just_pressed(GamepadButton::new(
-    //         gamepad,
-    //         GamepadButtonType::RightTrigger2,
-    //     )) {
-    //         debug!("{:?} just pressed RightTrigger2 ", gamepad);
-    //     }
-
-    //     // left stick control
-    //     let left_stick_x = axes
-    //         .get(GamepadAxis::new(gamepad, GamepadAxisType::LeftStickX))
-    //         .unwrap();
-    //     target_resource.player_delta.x = if left_stick_x.abs() > 0.01 {
-    //         trace!("{:?} LeftStickX value is {}", gamepad, left_stick_x);
-    //         left_stick_x
-    //     } else {
-    //         0.0
-    //     };
-    //     let left_stick_y = axes
-    //         .get(GamepadAxis::new(gamepad, GamepadAxisType::LeftStickY))
-    //         .unwrap();
-    //     target_resource.player_delta.y = if left_stick_y.abs() > 0.01 {
-    //         trace!("{:?} LefttStickY value is {}", gamepad, left_stick_y);
-    //         left_stick_y
-    //     } else {
-    //         0.0
-    //     };
-    // }
 }
 
 #[inline(always)]
