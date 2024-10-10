@@ -76,9 +76,16 @@ pub fn collider_system(
     for (shot_entity, colliding_entities) in &mut collision_query {
         for entity in colliding_entities.iter() {
             if *entity != player_entity {
-                trace!("hit target");
-                commands.entity(shot_entity).despawn();
-                commands.entity(*entity).despawn();
+                let entity = *entity;
+                let shot_entity = shot_entity;
+                // this ensures the same baddy doesnt swallow two shots
+                commands.add(move |world: &mut World| {
+                    // despawn the entity and shot only if the entity actually exists
+                    if let Some(entity) = world.get_entity_mut(entity) {
+                        entity.despawn();
+                        world.despawn(shot_entity);
+                    }
+                });
             }
         }
     }
