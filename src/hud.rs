@@ -1,3 +1,4 @@
+use avian2d::parry::query;
 use bevy::{color::palettes::css::*, prelude::*};
 
 #[derive(Component)]
@@ -96,7 +97,11 @@ pub fn setup(mut commands: Commands, weapons: Res<WeaponsResource>) {
         });
 }
 
-fn update_system(state: Res<SelectorResource>, mut query: Query<&mut Text>) {
+fn update_system(
+    state: Res<SelectorResource>,
+    mut query: Query<&mut Text>,
+    mut query_selector: Query<&mut Image>,
+) {
     //     let mut text = query.single_mut();
     //     text.sections[0].value = format!("{}", state.ammo);
 }
