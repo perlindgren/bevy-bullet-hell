@@ -59,8 +59,10 @@ fn selector_spawn(
     let nr_weapons = selector_r.weapons.len() as f32;
 
     for (i, weapons) in selector_r.weapons.iter().enumerate() {
-        let shape =
-            Mesh2dHandle(meshes.add(CircularSector::from_radians(100.0, 0.95 * TAU / nr_weapons)));
+        let shape = Mesh2dHandle(meshes.add(CircularSector::from_radians(
+            SELECTOR_RADIUS,
+            0.95 * TAU / nr_weapons,
+        )));
 
         let weapon_held = match hand {
             Hand::Left => selector_r.current_left,
@@ -70,12 +72,12 @@ fn selector_spawn(
         let color: Color = {
             if let Some(w) = weapon_held {
                 if w == i as u8 {
-                    css::DARK_GRAY
+                    SELECTOR_SELECT_COLOR
                 } else {
-                    css::DIM_GRAY
+                    SELECTOR_WHEEL_COLOR
                 }
             } else {
-                css::DIM_GRAY
+                SELECTOR_WHEEL_COLOR
             }
         }
         .into();
@@ -99,23 +101,28 @@ fn selector_spawn(
             SelectorIcon,
             SpriteBundle {
                 texture: weapon.image.clone(),
+
                 transform: Transform::from_translation(
                     (
-                        50.0 * angle.sin() + pos.x,
-                        50.0 * angle.cos() + pos.y,
+                        SELECTOR_RADIUS_ICON * angle.sin() + pos.x,
+                        SELECTOR_RADIUS_ICON * angle.cos() + pos.y,
                         102.0,
                     )
                         .into(),
-                ),
+                )
+                .with_scale((2.0, 2.0, 1.0).into()),
+
                 ..default()
             },
         ));
     }
 
-    let shape =
-        Mesh2dHandle(meshes.add(CircularSector::from_radians(80.0, 0.95 * TAU / nr_weapons)));
+    let shape = Mesh2dHandle(meshes.add(CircularSector::from_radians(
+        0.95 * SELECTOR_RADIUS,
+        0.95 * TAU / nr_weapons,
+    )));
 
-    let color: Color = css::DARK_SLATE_GRAY.into();
+    let color: Color = SELECTOR_SELECTOR_COLOR.into();
     commands.spawn((
         SelectorSegment,
         MaterialMesh2dBundle {

@@ -13,9 +13,15 @@ pub struct WeaponsResource {
 pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let mut weapons = vec![];
 
-    for _ in 0..4 {
+    let files = [
+        "sprites/gunt.png",
+        "sprites/tnt.png",
+        "sprites/jump.png",
+        "sprites/roll.png",
+    ];
+    for s in files {
         weapons.push(Weapon {
-            image: asset_server.load("sprites/cross.png"),
+            image: asset_server.load(s),
         })
     }
 

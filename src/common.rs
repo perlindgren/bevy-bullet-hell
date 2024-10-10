@@ -35,3 +35,9 @@ pub const STATUS_BAR_FONT_SIZE: f32 = 50.0;
 
 pub const SELECTOR_FONT_SIZE: f32 = 30.0;
 pub const SELECTOR_TEXT_COLOR: Srgba = css::WHITE_SMOKE;
+pub const SELECTOR_WHEEL_COLOR: Srgba = css::DIM_GRAY;
+pub const SELECTOR_SELECT_COLOR: Srgba = css::DARK_GRAY;
+pub const SELECTOR_COLOR: Srgba = css::DARK_GRAY;
+pub const SELECTOR_SELECTOR_COLOR: Srgba = css::DARK_SLATE_GRAY;
+pub const SELECTOR_RADIUS: f32 = 150.0;
+pub const SELECTOR_RADIUS_ICON: f32 = 100.0;
