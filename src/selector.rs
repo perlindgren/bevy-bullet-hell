@@ -1,5 +1,4 @@
 use bevy::{
-    color::palettes::css,
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };

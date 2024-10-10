@@ -5,6 +5,10 @@ use bevy::{
 };
 
 // use crate::common::*;
+use bevy_bullet_hell::{
+    common::*,
+    weapon::{self, WeaponsResource},
+};
 
 #[derive(Component)]
 struct Ammo;
@@ -12,12 +16,15 @@ struct Ammo;
 pub fn setup(mut commands: Commands) {
     // Camera
     commands.spawn((Camera2dBundle::default(), IsDefaultUiCamera));
+}
 
+pub fn setup_hid(mut commands: Commands, weapons: Res<WeaponsResource>) {
     commands
         .spawn(NodeBundle {
             style: Style {
                 width: Val::Px(400.0),
                 height: Val::Px(200.0),
+                align_items: AlignItems::Center,
                 justify_content: JustifyContent::SpaceBetween,
                 ..default()
             },
@@ -40,7 +47,7 @@ pub fn setup(mut commands: Commands) {
                     parent.spawn((
                         Ammo,
                         TextBundle::from_section(
-                            "inside",
+                            "",
                             TextStyle {
                                 color: LIGHT_CYAN.into(),
                                 ..default()
@@ -53,19 +60,34 @@ pub fn setup(mut commands: Commands) {
                         }),
                     ));
                 });
-            parent.spawn(
-                TextBundle::from_section(
-                    "hello",
-                    TextStyle {
-                        color: GOLD.into(),
-                        ..default()
-                    },
-                )
-                .with_style(Style {
-                    align_self: AlignSelf::Center,
+            // parent
+            // .spawn(NodeBundle {
+            //     style: Style {
+            //         width: Val::Px(200.),
+            //         height: Val::Px(150.),
+            //         border: UiRect::all(Val::Px(20.0)),
+            //         justify_content: JustifyContent::Center,
+            //         // position_type: PositionType::Absolute,
+            //         ..default()
+            //     },
+            //     background_color: DIM_GRAY.into(),
+            //     border_color: DARK_GRAY.into(),
+
+            //     ..default()
+            // })
+            // .with_children(|parent| {
+            parent.spawn(ImageBundle {
+                transform: Transform::from_translation((0.0, 0.0, 102.0).into())
+                    .with_scale((2.0, 2.0, 1.0).into()),
+                image: UiImage {
+                    texture: weapons.weapons[0].image.clone(),
                     ..default()
-                }),
-            );
+                },
+
+                ..default()
+            });
+            // })
+
             parent.spawn(TextBundle::from_section("again", TextStyle { ..default() }));
         });
 }
@@ -107,10 +129,11 @@ fn keyboard_input(mut state: ResMut<State>, keys: Res<ButtonInput<KeyCode>>) {
 
 fn main() {
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins)
-        // Only run the app when there is user input. This will significantly reduce CPU/GPU use.
-        // .insert_resource(WinitSettings::desktop_app())
-        .add_systems(Startup, (setup, state_setup))
+    app.add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_systems(
+            Startup,
+            (setup, weapon::setup, setup_hid, state_setup).chain(),
+        )
         .add_systems(Update, (keyboard_input, hid_system));
 
     // {

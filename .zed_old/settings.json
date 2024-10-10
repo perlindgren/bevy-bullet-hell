@@ -1,0 +1,9 @@
+{
+  "vim_mode": false,
+
+  "active_pane_magnification": 2.0,
+  "context": "Dock",
+  "bindings": {
+    "ctrl-h": ["workspace:ActivePaneInDirection", "Left"]
+  }
+}

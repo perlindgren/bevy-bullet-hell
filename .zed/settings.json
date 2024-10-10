@@ -4,6 +4,7 @@
 // see the documentation: https://zed.dev/docs/configuring-zed#settings-files
 {
   "vim_mode": true,
+  "soft_wrap": "editor_width",
   "lsp": {
     "rust-analyzer": {
       "initialization_options": {
