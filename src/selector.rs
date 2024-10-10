@@ -21,19 +21,19 @@ pub struct SelectorText(Hand);
 
 #[derive(Resource, Default)]
 pub struct SelectorResource {
-    weapons: Vec<u8>, // index to the weapon
-    current_left: Option<u8>,
-    current_right: Option<u8>,
+    pub texture_index: Vec<u8>, // index to the weapon
+    pub current_left: Option<u8>,
+    pub current_right: Option<u8>,
 }
 
 // setup system
 // for now hard coded to 4 weapons on the selection wheel
 // wheel starts empty
 pub fn setup(mut commands: Commands) {
-    let weapons = vec![0u8, 1, 2, 3];
+    let texture_index = vec![0u8, 1, 2, 3];
     commands.insert_resource({
         SelectorResource {
-            weapons,
+            texture_index,
             current_left: None,
             current_right: None,
         }
@@ -41,7 +41,7 @@ pub fn setup(mut commands: Commands) {
 }
 
 #[derive(Copy, Clone, Debug)]
-enum Hand {
+pub enum Hand {
     Left,
     Right,
 }
@@ -55,12 +55,12 @@ fn selector_spawn(
     selector_r: &SelectorResource,
     hand: Hand,
 ) {
-    let nr_weapons = selector_r.weapons.len() as f32;
+    let nr_select = selector_r.texture_index.len() as f32;
 
-    for (i, weapons) in selector_r.weapons.iter().enumerate() {
+    for (i, index) in selector_r.texture_index.iter().enumerate() {
         let shape = Mesh2dHandle(meshes.add(CircularSector::from_radians(
             SELECTOR_RADIUS,
-            0.95 * TAU / nr_weapons,
+            0.95 * TAU / nr_select,
         )));
 
         let weapon_held = match hand {
@@ -81,8 +81,7 @@ fn selector_spawn(
         }
         .into();
 
-        let angle = (i as f32) * TAU / nr_weapons;
-        let weapon = &weapons_r.weapons[*weapons as usize];
+        let angle = (i as f32) * TAU / nr_select;
 
         // TODO, here we might want to use a component with children instead
         commands.spawn((
@@ -99,8 +98,7 @@ fn selector_spawn(
         commands.spawn((
             SelectorIcon,
             SpriteBundle {
-                texture: weapon.image.clone(),
-
+                texture: weapons_r.texture.clone(),
                 transform: Transform::from_translation(
                     (
                         SELECTOR_RADIUS_ICON * angle.sin() + pos.x,
@@ -113,12 +111,16 @@ fn selector_spawn(
 
                 ..default()
             },
+            TextureAtlas {
+                layout: weapons_r.texture_atlas_layout.clone(),
+                index: *index as usize,
+            },
         ));
     }
 
     let shape = Mesh2dHandle(meshes.add(CircularSector::from_radians(
         0.95 * SELECTOR_RADIUS,
-        0.95 * TAU / nr_weapons,
+        0.95 * TAU / nr_select,
     )));
 
     let color: Color = SELECTOR_SELECTOR_COLOR.into();
@@ -174,7 +176,7 @@ pub fn update_system(
     button_inputs: Res<ButtonInput<GamepadButton>>,
     axes: Res<Axis<GamepadAxis>>,
 ) {
-    let nr_weapons = selector_r.weapons.len() as f32;
+    let nr_select = selector_r.texture_index.len() as f32;
 
     for gamepad in gamepads.iter() {
         // spawn new selector only if no selector is shown
@@ -255,7 +257,7 @@ pub fn update_system(
 
             // None if no weapon is selected
             let selected = if x != 0.0 || y != 0.0 {
-                let seg = segment(x, y, selector_r.weapons.len() as u8);
+                let seg = segment(x, y, nr_select as u8);
                 debug!("in segment {}", seg);
                 Some(seg)
             } else {
@@ -268,7 +270,7 @@ pub fn update_system(
 
             *segment_visibility = match selected {
                 Some(seg) => {
-                    let angle = (seg as f32) * TAU / nr_weapons;
+                    let angle = (seg as f32) * TAU / nr_select;
                     let rotation = Quat::from_axis_angle(Vec3::Z, angle);
                     segment_transform.rotation = rotation;
                     Visibility::Visible

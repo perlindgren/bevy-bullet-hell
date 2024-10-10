@@ -1,13 +1,13 @@
-use avian2d::parry::query;
+use crate::{
+    common::*,
+    selector::{Hand, SelectorResource},
+    weapon::WeaponsResource,
+};
 use bevy::{color::palettes::css::*, prelude::*};
 
 #[derive(Component)]
-struct LeftWeapon;
+pub struct InHand(Hand);
 
-#[derive(Component)]
-struct RightWeapon;
-
-use crate::{common::*, selector::SelectorResource, weapon::WeaponsResource};
 pub fn setup(mut commands: Commands, weapons: Res<WeaponsResource>) {
     commands
         .spawn(NodeBundle {
@@ -67,29 +67,36 @@ pub fn setup(mut commands: Commands, weapons: Res<WeaponsResource>) {
             // })
             // .with_children(|parent| {
             parent.spawn((
-                LeftWeapon,
+                InHand(Hand::Left),
                 ImageBundle {
                     transform: Transform::from_translation((0.0, 0.0, 102.0).into())
                         .with_scale((2.0, 2.0, 1.0).into()),
                     image: UiImage {
-                        texture: weapons.weapons[0].image.clone(),
+                        texture: weapons.texture.clone(),
+                        ..default()
+                    },
+                    ..default()
+                },
+                TextureAtlas {
+                    layout: weapons.texture_atlas_layout.clone(),
+                    index: 0,
+                },
+            ));
+            parent.spawn((
+                InHand(Hand::Right),
+                ImageBundle {
+                    transform: Transform::from_translation((0.0, 0.0, 102.0).into())
+                        .with_scale((2.0, 2.0, 1.0).into()),
+                    image: UiImage {
+                        texture: weapons.texture.clone(),
                         ..default()
                     },
 
                     ..default()
                 },
-            ));
-            parent.spawn((
-                LeftWeapon,
-                ImageBundle {
-                    transform: Transform::from_translation((0.0, 0.0, 102.0).into())
-                        .with_scale((2.0, 2.0, 1.0).into()),
-                    image: UiImage {
-                        texture: weapons.weapons[1].image.clone(),
-                        ..default()
-                    },
-
-                    ..default()
+                TextureAtlas {
+                    layout: weapons.texture_atlas_layout.clone(),
+                    index: 1,
                 },
             ));
 
@@ -97,11 +104,25 @@ pub fn setup(mut commands: Commands, weapons: Res<WeaponsResource>) {
         });
 }
 
-fn update_system(
+pub fn update_system(
     state: Res<SelectorResource>,
-    mut query: Query<&mut Text>,
-    mut query_selector: Query<&mut Image>,
+    mut _query: Query<&mut Text>,
+    mut hand_q: Query<(&mut TextureAtlas, &InHand)>,
 ) {
-    //     let mut text = query.single_mut();
+    for (mut texture_atlas, InHand(hand)) in hand_q.iter_mut() {
+        match hand {
+            Hand::Left => {
+                if let Some(i) = state.current_left {
+                    texture_atlas.index = state.texture_index[i as usize] as usize;
+                }
+            }
+
+            Hand::Right => {
+                if let Some(i) = state.current_right {
+                    texture_atlas.index = state.texture_index[i as usize] as usize;
+                }
+            }
+        }
+    }
     //     text.sections[0].value = format!("{}", state.ammo);
 }

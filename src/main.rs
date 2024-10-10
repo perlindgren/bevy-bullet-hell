@@ -65,6 +65,7 @@ fn main() {
                 camera::update_system,
                 ui::update_system,
                 selector::update_system,
+                hud::update_system,
             )
                 .chain(),
         )

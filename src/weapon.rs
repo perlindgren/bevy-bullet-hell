@@ -1,29 +1,25 @@
 pub use bevy::prelude::*;
 
-pub struct Weapon {
-    pub image: Handle<Image>,
-}
-
 #[derive(Resource, Default)]
 pub struct WeaponsResource {
-    pub weapons: Vec<Weapon>,
+    pub texture_atlas_layout: Handle<TextureAtlasLayout>,
+    pub texture: Handle<Image>,
 }
 
 // setup system, for now hard coded to 4 weapons
-pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let mut weapons = vec![];
+pub fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+) {
+    let texture = asset_server.load("sprites/Sprite-sheet.png");
 
-    let files = [
-        "sprites/gunt.png",
-        "sprites/tnt.png",
-        "sprites/jump.png",
-        "sprites/roll.png",
-    ];
-    for s in files {
-        weapons.push(Weapon {
-            image: asset_server.load(s),
-        })
-    }
+    // the sprite sheet has 10 sprites arranged in a row, and they are all 32px x 32px
+    let layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 11, 1, None, None);
+    let texture_atlas_layout = texture_atlas_layouts.add(layout);
 
-    commands.insert_resource(WeaponsResource { weapons });
+    commands.insert_resource(WeaponsResource {
+        texture_atlas_layout,
+        texture,
+    });
 }
