@@ -3,6 +3,7 @@ pub mod camera;
 pub mod common;
 pub mod gamepad;
 pub mod hud;
+pub mod layers;
 pub mod overlay;
 pub mod player;
 pub mod selector;
