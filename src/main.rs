@@ -60,7 +60,7 @@ fn main() {
                 block::update_system,
                 shooting::new_shot_system,
                 shooting::update_system,
-                shooting::collider_system,
+                shooting::collider_system.run_if(on_event::<CollisionStarted>()),
                 overlay::fps_update_system,
                 camera::update_system,
                 ui::update_system,
