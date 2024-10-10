@@ -1,10 +1,4 @@
-use bevy::{
-    color::palettes::css::GOLD,
-    diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
-    prelude::*,
-};
-
-use crate::common::*;
+use bevy::prelude::*;
 
 pub fn setup(mut commands: Commands) {
     commands
