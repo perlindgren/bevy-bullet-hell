@@ -169,7 +169,7 @@ pub fn selector_system(
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut selector_r: ResMut<SelectorResource>,
     weapons_r: Res<WeaponsResource>,
-    mut selector_q: Query<Entity, With<Selector>>,
+    selector_q: Query<Entity, With<Selector>>,
     selector_icon_q: Query<Entity, With<SelectorIcon>>,
     selector_text_q: Query<(Entity, &SelectorText), With<SelectorText>>,
     mut selector_segment_q: Query<(Entity, &mut Visibility, &mut Transform), With<SelectorSegment>>,
