@@ -24,15 +24,8 @@
 @group(0) @binding(1) var texture_sampler: sampler;
 struct PostProcessSettings {
     intensity: f32,
-#ifdef SIXTEEN_BYTE_ALIGNMENT
-    // WebGL2 structs must be 16 byte aligned.
-    _webgl2_padding: vec3<f32>
-#endif
     time: f32,
-    #ifdef SIXTEEN_BYTE_ALIGNMENT
-        // WebGL2 structs must be 16 byte aligned.
-        _webgl2_padding: vec3<f32>
-    #endif
+    epicenter : vec2<f32>,
 }
 @group(0) @binding(2) var<uniform> settings: PostProcessSettings;
 
@@ -41,13 +34,7 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
     // wave intensity
     let offset_strength = settings.intensity;
 
-    // constants
-    //  let wave_Params = vec3( 10.0, 2.1, 0.1 );
-
-    // center position for wave
-    let epicenter : vec2<f32> = vec2(0.5, 0.5);
-
-    var dist: f32 = distance(in.uv, epicenter);
+    var dist: f32 = distance(in.uv, settings.epicenter);
 
     let strength : f32 = 10.0;
     let well : f32 = 2.1;
@@ -59,7 +46,7 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
         var diff: f32 = dist - settings.time;
         var powerDiff: f32 = 1.0 - pow(abs(diff * strength), well);
         var diffTime: f32 = diff * powerDiff;
-        var diffUV: vec2<f32> = normalize(in.uv - epicenter);
+        var diffUV: vec2<f32> = normalize(in.uv - settings.epicenter);
         texCoord = in.uv + diffUV * diffTime;
     }
 

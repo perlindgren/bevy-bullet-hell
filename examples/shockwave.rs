@@ -34,6 +34,8 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 
+use rand::random;
+
 fn main() {
     App::new()
         .add_plugins((DefaultPlugins, PostProcessPlugin))
@@ -300,12 +302,8 @@ impl FromWorld for PostProcessPipeline {
 #[derive(Component, Default, Clone, Copy, ExtractComponent, ShaderType)]
 struct PostProcessSettings {
     intensity: f32,
-    // WebGL2 structs must be 16 byte aligned.
-    #[cfg(feature = "webgl2")]
-    _webgl2_padding: Vec3,
     time: f32,
-    #[cfg(feature = "webgl2")]
-    _webgl2_padding: Vec3,
+    epicenter: Vec2,
 }
 
 /// Set up a simple 2d scene
@@ -363,17 +361,14 @@ fn rotate(time: Res<Time>, mut query: Query<&mut Transform, With<Rotates>>) {
 // Change the intensity over time to show that the effect is controlled from the main world
 fn update_settings(mut settings: Query<&mut PostProcessSettings>, time: Res<Time>) {
     for mut setting in &mut settings {
-        let mut intensity = time.elapsed_seconds().sin();
-        // Make it loop periodically
-        intensity = intensity.sin();
-        // Remap it to 0..1 because the intensity can't be negative
-        intensity = intensity * 0.5 + 0.5;
-        // Scale it to a more reasonable level
-        intensity *= 0.015;
+        let intensity = 0.0;
 
-        // Set the intensity.
-        // This will then be extracted to the render world and uploaded to the gpu automatically by the [`UniformComponentPlugin`]
+        // setting will then be extracted to the render world and uploaded to the gpu automatically by the [`UniformComponentPlugin`]
         setting.intensity = intensity;
-        setting.time = time.elapsed_seconds() % 3.0;
+        let new_time = time.elapsed_seconds() % 3.0;
+        if new_time < setting.time {
+            setting.epicenter = (random(), random()).into();
+        }
+        setting.time = new_time;
     }
 }
