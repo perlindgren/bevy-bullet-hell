@@ -20,16 +20,16 @@ pub fn update_system(time: Res<Time>, mut rect_query: Query<(&mut Transform, &mu
             transform.translation + block.speed.extend(0.0) * time.delta_seconds() * BLOCKS_SPEED;
         if trans.x < -HALF_WIDTH {
             block.speed.x = block.speed.x.abs();
-            debug!("bounce left");
+            trace!("bounce left");
         } else if trans.x > HALF_WIDTH {
             block.speed.x = -block.speed.x.abs();
-            debug!("bounce right");
+            trace!("bounce right");
         } else if trans.y < -HALF_HEIGHT {
             block.speed.y = block.speed.y.abs();
-            debug!("bounce bottom");
+            trace!("bounce bottom");
         } else if trans.y > HALF_HEIGHT {
             block.speed.y = -block.speed.y.abs();
-            debug!("bounce top");
+            trace!("bounce top");
         }
         transform.translation = trans;
     }

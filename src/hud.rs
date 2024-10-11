@@ -69,7 +69,7 @@ pub fn setup(mut commands: Commands, weapons: Res<WeaponsResource>) {
             parent.spawn((
                 InHand(Hand::Left),
                 ImageBundle {
-                    transform: Transform::from_translation((0.0, 0.0, 102.0).into())
+                    transform: Transform::from_translation((2.0, 2.0, 102.0).into())
                         .with_scale((2.0, 2.0, 1.0).into()),
                     image: UiImage {
                         texture: weapons.texture.clone(),

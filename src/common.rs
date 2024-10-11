@@ -41,3 +41,5 @@ pub const SELECTOR_COLOR: Srgba = css::DARK_GRAY;
 pub const SELECTOR_SELECTOR_COLOR: Srgba = css::DARK_SLATE_GRAY;
 pub const SELECTOR_RADIUS: f32 = 150.0;
 pub const SELECTOR_RADIUS_ICON: f32 = 100.0;
+
+pub const SPRITE_SHEET: &'static str = "sprites/Sprite-sheet.png";

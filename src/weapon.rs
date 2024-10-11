@@ -1,4 +1,5 @@
-pub use bevy::prelude::*;
+use crate::common::*;
+use bevy::prelude::*;
 
 #[derive(Resource, Default)]
 pub struct WeaponsResource {
@@ -12,7 +13,8 @@ pub fn setup(
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let texture = asset_server.load("sprites/Sprite-sheet.png");
+    debug!("load sprite_sheet {:?}", SPRITE_SHEET);
+    let texture = asset_server.load(SPRITE_SHEET);
 
     // the sprite sheet has 10 sprites arranged in a row, and they are all 32px x 32px
     let layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 11, 1, None, None);

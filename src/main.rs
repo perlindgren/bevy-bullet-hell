@@ -62,10 +62,10 @@ fn main() {
                 shooting::update_system,
                 shooting::collider_system,
                 overlay::fps_update_system,
-                camera::update_system,
                 ui::update_system,
                 selector::update_system,
                 hud::update_system,
+                camera::update_system,
             )
                 .chain(),
         )
