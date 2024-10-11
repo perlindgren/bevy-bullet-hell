@@ -8,14 +8,27 @@ use bevy::{color::palettes::css::*, prelude::*};
 #[derive(Component)]
 pub struct InHand(Hand);
 
+#[derive(Component)]
+pub struct Exicitement;
+
 pub fn setup(mut commands: Commands, weapons: Res<WeaponsResource>) {
+    const LARGE_ICON: Val = Val::Px(64.0);
+    let icon_style = Style {
+        height: LARGE_ICON,
+        width: LARGE_ICON,
+        ..default()
+    };
     commands
         .spawn(NodeBundle {
             style: Style {
-                width: Val::Px(400.0),
-                height: Val::Px(200.0),
+                // width: Val::Px(400.0),
+                height: HID_HEIGHT,
                 align_items: AlignItems::Center,
                 justify_content: JustifyContent::SpaceBetween,
+                left: Val::Px(15.0),
+                bottom: Val::Px(15.0),
+                position_type: PositionType::Absolute,
+                column_gap: Val::Px(10.0),
                 ..default()
             },
             ..default()
@@ -24,83 +37,105 @@ pub fn setup(mut commands: Commands, weapons: Res<WeaponsResource>) {
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        width: Val::Px(200.),
-                        height: Val::Px(150.),
-                        border: UiRect::all(Val::Px(20.0)),
+                        width: HID_WIDTH,
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        border: UiRect::all(HID_BORDER),
                         ..default()
                     },
-                    background_color: DIM_GRAY.into(),
-                    border_color: DARK_GRAY.into(),
+                    background_color: HID_BACKGOUND_COLOR.into(),
+                    border_color: HID_BORDER_COLOR.into(),
                     ..default()
                 })
                 .with_children(|parent| {
                     parent.spawn((
-                        // Ammo,
-                        TextBundle::from_section(
-                            "",
-                            TextStyle {
-                                color: LIGHT_CYAN.into(),
+                        InHand(Hand::Left),
+                        ImageBundle {
+                            transform: Transform::from_translation((0.0, 0.0, 102.0).into()),
+                            image: UiImage {
+                                texture: weapons.texture.clone(),
                                 ..default()
                             },
-                        )
-                        .with_style(Style {
-                            left: Val::Px(10.0),
-                            top: Val::Px(10.0),
+
+                            style: icon_style.clone(),
                             ..default()
-                        }),
+                        },
+                        TextureAtlas {
+                            layout: weapons.texture_atlas_layout.clone(),
+                            index: 0,
+                        },
+                    ));
+                    parent.spawn(TextBundle::from_section("Left", TextStyle { ..default() }));
+                });
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        width: HID_WIDTH,
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        border: UiRect::all(HID_BORDER),
+                        ..default()
+                    },
+                    background_color: HID_BACKGOUND_COLOR.into(),
+                    border_color: HID_BORDER_COLOR.into(),
+                    ..default()
+                })
+                .with_children(|parent| {
+                    parent.spawn((
+                        InHand(Hand::Right),
+                        ImageBundle {
+                            transform: Transform::from_translation((0.0, 0.0, 102.0).into()),
+                            image: UiImage {
+                                texture: weapons.texture.clone(),
+                                ..default()
+                            },
+
+                            style: icon_style.clone(),
+                            ..default()
+                        },
+                        TextureAtlas {
+                            layout: weapons.texture_atlas_layout.clone(),
+                            index: 0,
+                        },
+                    ));
+                    parent.spawn(TextBundle::from_section("Right", TextStyle { ..default() }));
+                });
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        width: HID_WIDTH,
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        border: UiRect::all(Val::Px(5.0)),
+                        ..default()
+                    },
+                    background_color: HID_BACKGOUND_COLOR.into(),
+                    border_color: HID_BORDER_COLOR.into(),
+                    ..default()
+                })
+                .with_children(|parent| {
+                    parent.spawn((
+                        Exicitement,
+                        ImageBundle {
+                            transform: Transform::from_translation((0.0, 0.0, 102.0).into()),
+                            image: UiImage {
+                                texture: weapons.texture.clone(),
+                                ..default()
+                            },
+
+                            style: icon_style,
+                            ..default()
+                        },
+                        TextureAtlas {
+                            layout: weapons.texture_atlas_layout.clone(),
+                            index: 0,
+                        },
+                    ));
+                    parent.spawn(TextBundle::from_section(
+                        "Excite",
+                        TextStyle { ..default() },
                     ));
                 });
-            // parent
-            // .spawn(NodeBundle {
-            //     style: Style {
-            //         width: Val::Px(200.),
-            //         height: Val::Px(150.),
-            //         border: UiRect::all(Val::Px(20.0)),
-            //         justify_content: JustifyContent::Center,
-            //         // position_type: PositionType::Absolute,
-            //         ..default()
-            //     },
-            //     background_color: DIM_GRAY.into(),
-            //     border_color: DARK_GRAY.into(),
-
-            //     ..default()
-            // })
-            // .with_children(|parent| {
-            parent.spawn((
-                InHand(Hand::Left),
-                ImageBundle {
-                    transform: Transform::from_translation((2.0, 2.0, 102.0).into())
-                        .with_scale((2.0, 2.0, 1.0).into()),
-                    image: UiImage {
-                        texture: weapons.texture.clone(),
-                        ..default()
-                    },
-                    ..default()
-                },
-                TextureAtlas {
-                    layout: weapons.texture_atlas_layout.clone(),
-                    index: 0,
-                },
-            ));
-            parent.spawn((
-                InHand(Hand::Right),
-                ImageBundle {
-                    transform: Transform::from_translation((0.0, 0.0, 102.0).into())
-                        .with_scale((2.0, 2.0, 1.0).into()),
-                    image: UiImage {
-                        texture: weapons.texture.clone(),
-                        ..default()
-                    },
-
-                    ..default()
-                },
-                TextureAtlas {
-                    layout: weapons.texture_atlas_layout.clone(),
-                    index: 1,
-                },
-            ));
-
-            parent.spawn(TextBundle::from_section("again", TextStyle { ..default() }));
         });
 }
 
