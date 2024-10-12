@@ -1,20 +1,31 @@
 //! A shader and a material that uses it.
 
 use bevy::{
+    diagnostic::FrameTimeDiagnosticsPlugin,
     prelude::*,
     reflect::TypePath,
     render::render_resource::{AsBindGroup, ShaderRef, ShaderType},
     sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle},
 };
 
+use bevy_bullet_hell::overlay;
+
 fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
             Material2dPlugin::<CustomMaterial>::default(),
+            FrameTimeDiagnosticsPlugin,
         ))
-        .add_systems(Startup, setup)
-        .add_systems(Update, animate_materials)
+        .add_systems(Startup, (setup, overlay::setup))
+        .add_systems(
+            Update,
+            (
+                keyboard_input,
+                animate_materials,
+                overlay::fps_update_system,
+            ),
+        )
         .run();
 }
 
@@ -43,6 +54,8 @@ fn setup(
 #[derive(Resource, Default, Clone, ShaderType, Debug)]
 pub struct LevelMeterSettings {
     time: f32,
+    level: f32,
+    impulse: f32,
 }
 // This is the struct that will be passed to your shader
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
@@ -55,13 +68,25 @@ struct CustomMaterial {
 }
 
 fn animate_materials(
-    material_handles: Query<&Handle<CustomMaterial>>,
     time: Res<Time>,
+    material_handles: Query<&Handle<CustomMaterial>>,
     mut materials: ResMut<Assets<CustomMaterial>>,
 ) {
     for material_handle in material_handles.iter() {
+        let t = time.elapsed_seconds();
+        println!("t {:?}", t);
         if let Some(material) = materials.get_mut(material_handle) {
-            material.settings.time = time.elapsed_seconds();
+            material.settings.time = t;
+            material.settings.level = (t / 10.0).min(0.5);
+            // | delta |
+            // |    delta     |
+            material.settings.impulse =
+                (material.settings.impulse - 1.0 * time.delta_seconds()).max(1.0);
+            // we should use time instead
+            println!(
+                "t {:?} material.settings.impulse {}",
+                t, material.settings.impulse
+            );
         }
     }
 }
@@ -71,5 +96,20 @@ fn animate_materials(
 impl Material2d for CustomMaterial {
     fn fragment_shader() -> ShaderRef {
         "shaders/level_meter.wgsl".into()
+    }
+}
+
+fn keyboard_input(
+    keys: Res<ButtonInput<KeyCode>>,
+    material_handles: Query<&Handle<CustomMaterial>>,
+    mut materials: ResMut<Assets<CustomMaterial>>,
+) {
+    if keys.just_pressed(KeyCode::Space) {
+        for material_handle in material_handles.iter() {
+            println!("impulse");
+            if let Some(material) = materials.get_mut(material_handle) {
+                material.settings.impulse = 5.0;
+            }
+        }
     }
 }
