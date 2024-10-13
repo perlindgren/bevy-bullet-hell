@@ -33,7 +33,7 @@ fn main() {
             FrameTimeDiagnosticsPlugin,
             TilemapPlugin,
             // Material2dPlugin::<hud::CustomUIMaterial>::default(),
-            UiMaterialPlugin::<hud::CustomUIMaterial>::default(),
+            UiMaterialPlugin::<hud::excite::CustomUIMaterial>::default(),
         ))
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(Gravity(Vector::ZERO))
@@ -50,7 +50,8 @@ fn main() {
                 ui::setup,
                 weapon::setup,
                 selector::setup,
-                hud::setup,
+                hud::excite::setup,
+                hud::hud_ui::setup,
             )
                 .chain(),
         )
@@ -67,8 +68,9 @@ fn main() {
                 overlay::fps_update_system,
                 ui::update_system,
                 selector::update_system,
-                hud::update_excite_system,
-                hud::update_system,
+                hud::excite::keyboard_input, // for debugging
+                hud::excite::update_system,
+                hud::hud_ui::update_system,
                 camera::update_system,
             )
                 .chain(),

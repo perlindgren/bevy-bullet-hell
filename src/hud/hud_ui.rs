@@ -1,59 +1,10 @@
 use crate::{
     common::*,
+    hud::excite::{CustomUIMaterial, LevelMeterSettings},
     selector::{Hand, SelectorResource},
     weapon::WeaponsResource,
 };
-use bevy::{
-    prelude::*,
-    render::render_resource::{AsBindGroup, ShaderRef, ShaderType},
-};
-
-#[derive(Resource, Default, Clone, ShaderType, Debug)]
-pub struct LevelMeterSettings {
-    time: f32,
-    level: f32,
-    impulse: f32,
-}
-// This is the struct that will be passed to your shader
-#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
-pub struct CustomUIMaterial {
-    #[uniform(0)]
-    settings: LevelMeterSettings,
-    #[texture(1)]
-    #[sampler(2)]
-    color_texture: Option<Handle<Image>>,
-}
-
-// impl Material2d for CustomUIMaterial {
-impl UiMaterial for CustomUIMaterial {
-    fn fragment_shader() -> ShaderRef {
-        "shaders/excite.wgsl".into()
-    }
-}
-
-pub fn update_excite_system(
-    time: Res<Time>,
-    material_handles: Query<&Handle<CustomUIMaterial>>,
-    mut materials: ResMut<Assets<CustomUIMaterial>>,
-) {
-    for material_handle in material_handles.iter() {
-        let t = time.elapsed_seconds();
-
-        if let Some(material) = materials.get_mut(material_handle) {
-            material.settings.time = t;
-            material.settings.level = (material.settings.level + (time.delta_seconds())).min(0.5);
-            // | delta |
-            // |    delta     |
-            material.settings.impulse =
-                (material.settings.impulse - 1.0 * time.delta_seconds()).max(1.0);
-            // we should use time instead
-            // println!(
-            //     "t {:?} material.settings.impulse {}",
-            //     t, material.settings.impulse
-            // );
-        }
-    }
-}
+use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct InHand(Hand);
@@ -70,6 +21,7 @@ pub fn setup(
         width: LARGE_ICON,
         ..default()
     };
+
     commands
         .spawn(NodeBundle {
             style: Style {

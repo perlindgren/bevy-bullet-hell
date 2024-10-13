@@ -21,8 +21,6 @@ fn fragment(mesh: VertexOutput) -> @location(0) vec4<f32> {
     + sin(1.33 * settings.time + (- mesh.uv.x) * 4.0 * 1.33 * pi) * 0.03
       )
 
-    // + sin( (settings.impulse + settings.time) *  mesh.uv.x * 2.0 * pi) * 0.03 // right to left
-    // + sin( -(settings.impulse + settings.time) * mesh.uv.x * 2.0 * pi) * 0.03 // left to right
     {
          out.r = 1.0;
     };
