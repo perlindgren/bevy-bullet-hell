@@ -8,7 +8,7 @@ use bevy::{
     sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle},
 };
 
-use bevy_bullet_hell::overlay;
+use bevy_bullet_hell::{overlay, utils::*};
 
 fn main() {
     App::new()
@@ -49,6 +49,23 @@ fn setup(
         }),
         ..default()
     });
+    // let res = ExciteResource
+    commands.insert_resource(ExciteResource {
+        shake: TimerEnvelope::new(Envelope {
+            start_value: 1.0,
+            points: vec![
+                EnvPoint {
+                    delta_time: 0.5,
+                    value: 4.0,
+                },
+                EnvPoint {
+                    delta_time: 3.0,
+                    value: 1.0,
+                },
+            ],
+        }),
+        level: 0.0,
+    });
 }
 
 #[derive(Resource, Default, Clone, ShaderType, Debug)]
@@ -67,8 +84,15 @@ struct CustomMaterial {
     color_texture: Option<Handle<Image>>,
 }
 
+#[derive(Resource)]
+pub struct ExciteResource {
+    pub shake: TimerEnvelope,
+    pub level: f32,
+}
+
 fn animate_materials(
     time: Res<Time>,
+    mut excite_r: ResMut<ExciteResource>,
     material_handles: Query<&Handle<CustomMaterial>>,
     mut materials: ResMut<Assets<CustomMaterial>>,
 ) {
@@ -77,15 +101,18 @@ fn animate_materials(
 
         if let Some(material) = materials.get_mut(material_handle) {
             material.settings.time = t;
-            material.settings.level = (material.settings.level + (time.delta_seconds())).min(0.5);
-            // | delta |
-            // |    delta     |
-            material.settings.impulse =
-                (material.settings.impulse - 1.0 * time.delta_seconds()).max(1.0);
-            // we should use time instead
+            material.settings.level += 0.1
+                * time.delta_seconds()
+                * if material.settings.level < excite_r.level {
+                    1.0
+                } else {
+                    -1.0
+                };
+            material.settings.impulse = excite_r.shake.get(time.delta());
+
             println!(
-                "t {:?} material.settings.impulse {}",
-                t, material.settings.impulse
+                "t {:?} material.settings.impulse {}, set level {}, material level {}",
+                t, material.settings.impulse, excite_r.level, material.settings.level
             );
         }
     }
@@ -99,20 +126,14 @@ impl Material2d for CustomMaterial {
     }
 }
 
-fn keyboard_input(
-    keys: Res<ButtonInput<KeyCode>>,
-    material_handles: Query<&Handle<CustomMaterial>>,
-    mut materials: ResMut<Assets<CustomMaterial>>,
-) {
-    for material_handle in material_handles.iter() {
-        println!("impulse");
-        if let Some(material) = materials.get_mut(material_handle) {
-            if keys.just_pressed(KeyCode::Space) {
-                material.settings.impulse = 5.0;
-            }
-            if keys.just_pressed(KeyCode::Enter) {
-                material.settings.level = 0.0;
-            }
-        }
+fn keyboard_input(mut excite_r: ResMut<ExciteResource>, keys: Res<ButtonInput<KeyCode>>) {
+    if keys.just_pressed(KeyCode::ArrowUp) {
+        excite_r.level += 0.1;
+    }
+    if keys.just_pressed(KeyCode::ArrowDown) {
+        excite_r.level -= 0.1;
+    }
+    if keys.just_pressed(KeyCode::Enter) {
+        excite_r.shake.timer.reset();
     }
 }

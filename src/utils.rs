@@ -2,6 +2,8 @@
 ///!
 ///! Simple linear interpolation of an envelope
 ///! Readings beyond the last envelepe point returns value of the last envelope point
+use bevy::time::Stopwatch;
+use std::time::Duration;
 
 /// Point in envelope
 #[derive(Debug, Copy, Clone)]
@@ -22,7 +24,6 @@ impl Envelope {
         let mut curr_time = 0.0;
         let mut curr_value = self.start_value;
         for v in self.points.iter() {
-            println!("v {:?}", v);
             let next_time = curr_time + v.delta_time;
             if at_time < next_time {
                 let time_dist = at_time - curr_time;
@@ -39,9 +40,54 @@ impl Envelope {
     }
 }
 
+pub struct TimerEnvelope {
+    pub timer: Stopwatch,
+    pub envelope: Envelope,
+}
+
+impl TimerEnvelope {
+    pub fn new(envelope: Envelope) -> Self {
+        Self {
+            timer: Stopwatch::new(),
+            envelope,
+        }
+    }
+    pub fn get(&mut self, delta: Duration) -> f32 {
+        self.timer.tick(delta);
+        self.envelope.get(self.timer.elapsed().as_secs_f32())
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn test_time_envelope() {
+        let mut te = TimerEnvelope::new(Envelope {
+            start_value: 1.0,
+            points: vec![
+                EnvPoint {
+                    delta_time: 0.5,
+                    value: 2.0,
+                },
+                EnvPoint {
+                    delta_time: 0.5,
+                    value: 0.0,
+                },
+            ],
+        });
+
+        let duration = std::time::Duration::from_secs_f32(0.1);
+
+        loop {
+            let v = te.get(duration);
+            println!("v {}", v);
+            if v == 0.0 {
+                break;
+            }
+        }
+    }
 
     #[test]
     fn test_envelope() {
