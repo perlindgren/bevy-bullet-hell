@@ -6,6 +6,5 @@ pub fn update_system(
     mut player_query: Query<&mut Transform, (With<Camera>, Without<CustomCamera>)>,
 ) {
     let mut transform = player_query.single_mut();
-
     transform.translation = player_resource.player_pos.extend(0.0) * 0.25;
 }

@@ -26,12 +26,12 @@ pub fn setup(
     commands
         .spawn(NodeBundle {
             style: Style {
-                // width: Val::Px(400.0),
-                height: HID_HEIGHT,
+                height: HID_HEIGHT_PX,
+                width: Val::Px(RES_X),
                 align_items: AlignItems::Center,
-                justify_content: JustifyContent::SpaceBetween,
-                left: Val::Px(15.0),
-                bottom: Val::Px(15.0),
+                justify_content: JustifyContent::Center,
+
+                bottom: Val::Px(5.0),
                 position_type: PositionType::Absolute,
                 column_gap: Val::Px(10.0),
                 ..default()
@@ -42,10 +42,10 @@ pub fn setup(
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        width: HID_WIDTH,
+                        width: HID_WIDTH_PX,
                         flex_direction: FlexDirection::Column,
                         align_items: AlignItems::Center,
-                        border: UiRect::all(HID_BORDER),
+                        border: UiRect::all(HID_BORDER_PX),
                         ..default()
                     },
                     background_color: HID_BACKGOUND_COLOR.into(),
@@ -75,10 +75,38 @@ pub fn setup(
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        width: HID_WIDTH,
+                        width: HID_WIDTH_PX,
                         flex_direction: FlexDirection::Column,
                         align_items: AlignItems::Center,
-                        border: UiRect::all(HID_BORDER),
+                        border: UiRect::all(Val::Px(5.0)),
+                        ..default()
+                    },
+                    background_color: HID_BACKGOUND_COLOR.into(),
+                    border_color: HID_BORDER_COLOR.into(),
+                    ..default()
+                })
+                .with_children(|parent| {
+                    parent.spawn(MaterialNodeBundle {
+                        transform: Transform::from_translation((0.0, 0.0, 102.0).into()),
+                        material: ui_materials.add(CustomUIMaterial {
+                            settings: LevelMeterSettings::default(),
+                            color_texture: Some(asset_server.load("sprites/excite.png")),
+                        }),
+                        style: icon_style.clone(),
+                        ..default()
+                    });
+                    parent.spawn(TextBundle::from_section(
+                        "Excite",
+                        TextStyle { ..default() },
+                    ));
+                });
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        width: HID_WIDTH_PX,
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        border: UiRect::all(HID_BORDER_PX),
                         ..default()
                     },
                     background_color: HID_BACKGOUND_COLOR.into(),
@@ -104,34 +132,6 @@ pub fn setup(
                         },
                     ));
                     parent.spawn(TextBundle::from_section("Right", TextStyle { ..default() }));
-                });
-            parent
-                .spawn(NodeBundle {
-                    style: Style {
-                        width: HID_WIDTH,
-                        flex_direction: FlexDirection::Column,
-                        align_items: AlignItems::Center,
-                        border: UiRect::all(Val::Px(5.0)),
-                        ..default()
-                    },
-                    background_color: HID_BACKGOUND_COLOR.into(),
-                    border_color: HID_BORDER_COLOR.into(),
-                    ..default()
-                })
-                .with_children(|parent| {
-                    parent.spawn(MaterialNodeBundle {
-                        transform: Transform::from_translation((0.0, 0.0, 102.0).into()),
-                        material: ui_materials.add(CustomUIMaterial {
-                            settings: LevelMeterSettings::default(),
-                            color_texture: Some(asset_server.load("sprites/excite.png")),
-                        }),
-                        style: icon_style,
-                        ..default()
-                    });
-                    parent.spawn(TextBundle::from_section(
-                        "Excite",
-                        TextStyle { ..default() },
-                    ));
                 });
         });
 }

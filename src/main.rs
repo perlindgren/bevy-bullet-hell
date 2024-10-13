@@ -25,8 +25,8 @@ fn setup(mut commands: Commands) {
                 order: 1,
                 viewport: Some(Viewport {
                     physical_position: UVec2::new(
-                        RES_X as u32 - SELECTOR_SIZE,
-                        RES_Y as u32 - SELECTOR_SIZE,
+                        (HALF_WIDTH - SELECTOR_RADIUS) as u32,
+                        RES_Y as u32 - SELECTOR_SIZE - HID_HEIGHT - SELECTOR_BOTTOM,
                     ),
                     physical_size: UVec2::new(SELECTOR_SIZE, SELECTOR_SIZE),
                     ..default()

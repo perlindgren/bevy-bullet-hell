@@ -15,14 +15,13 @@ fn fragment(mesh: VertexOutput) -> @location(0) vec4<f32> {
   let pi : f32 = 3.14;
   var out = textureSample(base_color_texture, base_color_sampler, mesh.uv);
 
-  if  (mesh.uv.y >
-    1.0 - settings.level
-    + sin(settings.time + mesh.uv.x * 4.0 * pi) * 0.02 * settings.impulse
-    + sin(1.33 * settings.time + (- mesh.uv.x) * 4.0 * 1.33 * pi) * 0.03
-      )
+  let cmp = 1.0 - settings.level
+      + sin(settings.time + mesh.uv.x * 4.0 * pi) * 0.02 * settings.impulse
+      + sin(1.33 * settings.time + (- mesh.uv.x) * 4.0 * 1.33 * pi) * 0.03;
 
+  if  (mesh.uv.y > cmp)
     {
-         out.r = 1.0;
+        out.r = pow(mesh.uv.y - cmp, 0.5) ;
     };
   return out;
 }
