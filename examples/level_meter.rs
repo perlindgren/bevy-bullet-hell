@@ -74,10 +74,10 @@ fn animate_materials(
 ) {
     for material_handle in material_handles.iter() {
         let t = time.elapsed_seconds();
-        println!("t {:?}", t);
+
         if let Some(material) = materials.get_mut(material_handle) {
             material.settings.time = t;
-            material.settings.level = (t / 10.0).min(0.5);
+            material.settings.level = (material.settings.level + (time.delta_seconds())).min(0.5);
             // | delta |
             // |    delta     |
             material.settings.impulse =
@@ -104,11 +104,14 @@ fn keyboard_input(
     material_handles: Query<&Handle<CustomMaterial>>,
     mut materials: ResMut<Assets<CustomMaterial>>,
 ) {
-    if keys.just_pressed(KeyCode::Space) {
-        for material_handle in material_handles.iter() {
-            println!("impulse");
-            if let Some(material) = materials.get_mut(material_handle) {
+    for material_handle in material_handles.iter() {
+        println!("impulse");
+        if let Some(material) = materials.get_mut(material_handle) {
+            if keys.just_pressed(KeyCode::Space) {
                 material.settings.impulse = 5.0;
+            }
+            if keys.just_pressed(KeyCode::Enter) {
+                material.settings.level = 0.0;
             }
         }
     }
