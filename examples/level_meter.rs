@@ -110,10 +110,10 @@ fn animate_materials(
                 };
             material.settings.impulse = excite_r.shake.get(time.delta());
 
-            println!(
-                "t {:?} material.settings.impulse {}, set level {}, material level {}",
-                t, material.settings.impulse, excite_r.level, material.settings.level
-            );
+            // println!(
+            //     "t {:?} material.settings.impulse {}, set level {}, material level {}",
+            //     t, material.settings.impulse, excite_r.level, material.settings.level
+            // );
         }
     }
 }

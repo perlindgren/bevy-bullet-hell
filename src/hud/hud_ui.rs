@@ -15,8 +15,9 @@ pub fn setup(
     mut ui_materials: ResMut<Assets<CustomUIMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
-    const LARGE_ICON: Val = Val::Px(64.0);
+    const LARGE_ICON: Val = Val::Px(96.0);
     let icon_style = Style {
+        top: Val::Px(5.0),
         height: LARGE_ICON,
         width: LARGE_ICON,
         ..default()

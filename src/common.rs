@@ -44,9 +44,9 @@ pub const SELECTOR_RADIUS_ICON: f32 = 100.0;
 
 pub const SPRITE_SHEET: &'static str = "sprites/Sprite-sheet.png";
 
-pub const HID_HEIGHT: Val = Val::Px(110.0);
+pub const HID_HEIGHT: Val = Val::Px(120.0);
 pub const HID_BORDER: Val = Val::Px(5.0);
-pub const HID_WIDTH: Val = Val::Px(100.0);
+pub const HID_WIDTH: Val = Val::Px(120.0);
 
 pub const HID_BACKGOUND_COLOR: Srgba = css::SKY_BLUE;
 pub const HID_BORDER_COLOR: Srgba = css::BLUE;

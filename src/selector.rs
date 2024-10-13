@@ -103,7 +103,7 @@ fn selector_spawn(
                     (
                         SELECTOR_RADIUS_ICON * angle.sin() + pos.x,
                         SELECTOR_RADIUS_ICON * angle.cos() + pos.y,
-                        102.0,
+                        103.0,
                     )
                         .into(),
                 )
@@ -137,6 +137,21 @@ fn selector_spawn(
         },
     ));
 
+    let shape = Mesh2dHandle(meshes.add(Circle::new(40.0)));
+
+    let color: Color = SELECTOR_WHEEL_COLOR.into();
+    commands.spawn((
+        Selector,
+        MaterialMesh2dBundle {
+            mesh: shape,
+            material: materials.add(
+                color, //.with_alpha(0.1)
+            ),
+            transform: Transform::from_xyz(pos.x, pos.y, 103.0),
+            ..default()
+        },
+    ));
+
     commands.spawn((
         SelectorText(hand),
         Text2dBundle {
@@ -152,7 +167,7 @@ fn selector_spawn(
                 },
             )
             .with_justify(JustifyText::Center),
-            transform: Transform::from_xyz(pos.x, pos.y, 103.0),
+            transform: Transform::from_xyz(pos.x, pos.y, 104.0),
             ..default()
         },
     ));
