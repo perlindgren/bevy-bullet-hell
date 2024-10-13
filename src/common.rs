@@ -39,9 +39,10 @@ pub const SELECTOR_WHEEL_COLOR: Srgba = css::LIGHT_SKY_BLUE;
 pub const SELECTOR_SELECT_COLOR: Srgba = css::BLUE;
 pub const SELECTOR_COLOR: Srgba = css::STEEL_BLUE;
 pub const SELECTOR_SELECTOR_COLOR: Srgba = css::ALICE_BLUE;
+
 pub const SELECTOR_RADIUS: f32 = 150.0;
 pub const SELECTOR_RADIUS_ICON: f32 = 100.0;
-
+pub const SELECTOR_SIZE: u32 = SELECTOR_RADIUS as u32 * 2;
 pub const SPRITE_SHEET: &'static str = "sprites/Sprite-sheet.png";
 
 pub const HID_HEIGHT: Val = Val::Px(120.0);
@@ -50,3 +51,6 @@ pub const HID_WIDTH: Val = Val::Px(120.0);
 
 pub const HID_BACKGOUND_COLOR: Srgba = css::SKY_BLUE;
 pub const HID_BORDER_COLOR: Srgba = css::BLUE;
+
+#[derive(Component)]
+pub struct CustomCamera;

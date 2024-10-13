@@ -8,7 +8,7 @@ use bevy::{
     sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle},
 };
 
-use bevy_bullet_hell::{overlay, utils::*};
+use bevy_bullet_hell::{hud::fps, utils::*};
 
 fn main() {
     App::new()
@@ -17,14 +17,10 @@ fn main() {
             Material2dPlugin::<CustomMaterial>::default(),
             FrameTimeDiagnosticsPlugin,
         ))
-        .add_systems(Startup, (setup, overlay::setup))
+        .add_systems(Startup, (setup, fps::setup))
         .add_systems(
             Update,
-            (
-                keyboard_input,
-                animate_materials,
-                overlay::fps_update_system,
-            ),
+            (keyboard_input, animate_materials, fps::update_system),
         )
         .run();
 }

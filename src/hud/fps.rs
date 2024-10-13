@@ -37,7 +37,7 @@ pub fn setup(mut commands: Commands) {
 }
 
 // It displays the current FPS in the
-pub fn fps_update_system(
+pub fn update_system(
     diagnostics: Res<DiagnosticsStore>,
     mut query: Query<&mut Text, With<ShowState>>,
 ) {

@@ -1,11 +1,12 @@
 use bevy::{
     prelude::*,
+    render::view::visibility::RenderLayers,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 
 use std::f32::consts::{PI, TAU};
 
-use crate::{common::*, player::PlayerResource, weapon::WeaponsResource};
+use crate::{common::*, weapon::WeaponsResource};
 
 #[derive(Component)]
 pub struct Selector;
@@ -47,7 +48,7 @@ pub enum Hand {
 }
 
 fn selector_spawn(
-    pos: Vec2,
+    // pos: Vec2,
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
     materials: &mut Assets<ColorMaterial>,
@@ -81,34 +82,35 @@ fn selector_spawn(
         }
         .into();
 
-        let angle = -(i as f32) * TAU / nr_select;
+        let angle = (i as f32) * TAU / nr_select;
 
         // TODO, here we might want to use a component with children instead
         commands.spawn((
+            RenderLayers::from_layers(&[1]),
             Selector,
             MaterialMesh2dBundle {
                 mesh: shape,
                 material: materials.add(color),
-                transform: Transform::from_xyz(pos.x, pos.y, 100.0)
+                transform: Transform::from_xyz(0.0, 0.0, 100.0)
                     .with_rotation(Quat::from_axis_angle(Vec3::Z, angle)),
                 ..default()
             },
         ));
 
         commands.spawn((
+            RenderLayers::from_layers(&[1]),
             SelectorIcon,
             SpriteBundle {
                 texture: weapons_r.texture.clone(),
                 transform: Transform::from_translation(
                     (
-                        SELECTOR_RADIUS_ICON * angle.sin() + pos.x,
-                        SELECTOR_RADIUS_ICON * angle.cos() + pos.y,
+                        SELECTOR_RADIUS_ICON * (-angle).sin(),
+                        SELECTOR_RADIUS_ICON * (-angle).cos(),
                         103.0,
                     )
                         .into(),
                 )
                 .with_scale((2.0, 2.0, 1.0).into()),
-
                 ..default()
             },
             TextureAtlas {
@@ -125,34 +127,33 @@ fn selector_spawn(
 
     let color: Color = SELECTOR_SELECTOR_COLOR.into();
     commands.spawn((
+        RenderLayers::from_layers(&[1]),
         SelectorSegment,
         MaterialMesh2dBundle {
             mesh: shape,
-            material: materials.add(
-                color, //.with_alpha(0.1)
-            ),
-            transform: Transform::from_xyz(pos.x, pos.y, 101.0),
+            material: materials.add(color),
+            transform: Transform::from_xyz(0.0, 0.0, 101.0),
             visibility: Visibility::Hidden,
             ..default()
         },
     ));
 
+    // center area backround to text
     let shape = Mesh2dHandle(meshes.add(Circle::new(40.0)));
-
-    let color: Color = SELECTOR_WHEEL_COLOR.into();
+    let color: Color = SELECTOR_SELECT_COLOR.into();
     commands.spawn((
+        RenderLayers::from_layers(&[1]),
         Selector,
         MaterialMesh2dBundle {
             mesh: shape,
-            material: materials.add(
-                color, //.with_alpha(0.1)
-            ),
-            transform: Transform::from_xyz(pos.x, pos.y, 103.0),
+            material: materials.add(color),
+            transform: Transform::from_xyz(0.0, 0.0, 103.0),
             ..default()
         },
     ));
 
     commands.spawn((
+        RenderLayers::from_layers(&[1]),
         SelectorText(hand),
         Text2dBundle {
             text: Text::from_section(
@@ -167,7 +168,7 @@ fn selector_spawn(
                 },
             )
             .with_justify(JustifyText::Center),
-            transform: Transform::from_xyz(pos.x, pos.y, 104.0),
+            transform: Transform::from_xyz(0.0, 0.0, 104.0),
             ..default()
         },
     ));
@@ -180,14 +181,12 @@ pub fn update_system(
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut selector_r: ResMut<SelectorResource>,
     weapons_r: Res<WeaponsResource>,
-    player_r: Res<PlayerResource>,
     selector_q: Query<Entity, With<Selector>>,
     selector_icon_q: Query<Entity, With<SelectorIcon>>,
     selector_text_q: Query<(Entity, &SelectorText), With<SelectorText>>,
     mut selector_segment_q: Query<(Entity, &mut Visibility, &mut Transform), With<SelectorSegment>>,
 
     gamepads: Res<Gamepads>,
-    // segment_r: ResMut<SelectorResource>,
     button_inputs: Res<ButtonInput<GamepadButton>>,
     axes: Res<Axis<GamepadAxis>>,
 ) {
@@ -215,7 +214,6 @@ pub fn update_system(
             if let Some(hand) = spawn {
                 debug!("spawn {:?}", hand);
                 selector_spawn(
-                    player_r.player_pos,
                     &mut commands,
                     &mut meshes,
                     &mut materials,

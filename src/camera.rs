@@ -1,9 +1,9 @@
-use crate::player::PlayerResource;
+use crate::{common::CustomCamera, player::PlayerResource};
 use bevy::prelude::*;
 
 pub fn update_system(
     player_resource: Res<PlayerResource>,
-    mut player_query: Query<&mut Transform, With<Camera>>,
+    mut player_query: Query<&mut Transform, (With<Camera>, Without<CustomCamera>)>,
 ) {
     let mut transform = player_query.single_mut();
 
