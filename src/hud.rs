@@ -3,15 +3,67 @@ use crate::{
     selector::{Hand, SelectorResource},
     weapon::WeaponsResource,
 };
-use bevy::{color::palettes::css::*, prelude::*};
+use bevy::{
+    prelude::*,
+    render::render_resource::{AsBindGroup, ShaderRef, ShaderType},
+};
+
+#[derive(Resource, Default, Clone, ShaderType, Debug)]
+pub struct LevelMeterSettings {
+    time: f32,
+    level: f32,
+    impulse: f32,
+}
+// This is the struct that will be passed to your shader
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct CustomUIMaterial {
+    #[uniform(0)]
+    settings: LevelMeterSettings,
+    #[texture(1)]
+    #[sampler(2)]
+    color_texture: Option<Handle<Image>>,
+}
+
+// impl Material2d for CustomUIMaterial {
+impl UiMaterial for CustomUIMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/excite.wgsl".into()
+    }
+}
+
+pub fn update_excite_system(
+    time: Res<Time>,
+    material_handles: Query<&Handle<CustomUIMaterial>>,
+    mut materials: ResMut<Assets<CustomUIMaterial>>,
+) {
+    for material_handle in material_handles.iter() {
+        let t = time.elapsed_seconds();
+
+        if let Some(material) = materials.get_mut(material_handle) {
+            material.settings.time = t;
+            material.settings.level = (material.settings.level + (time.delta_seconds())).min(0.5);
+            // | delta |
+            // |    delta     |
+            material.settings.impulse =
+                (material.settings.impulse - 1.0 * time.delta_seconds()).max(1.0);
+            // we should use time instead
+            // println!(
+            //     "t {:?} material.settings.impulse {}",
+            //     t, material.settings.impulse
+            // );
+        }
+    }
+}
 
 #[derive(Component)]
 pub struct InHand(Hand);
 
-#[derive(Component)]
-pub struct Exicitement;
-
-pub fn setup(mut commands: Commands, weapons: Res<WeaponsResource>) {
+pub fn setup(
+    mut commands: Commands,
+    weapons: Res<WeaponsResource>,
+    mut ui_materials: ResMut<Assets<CustomUIMaterial>>,
+    asset_server: Res<AssetServer>,
+) {
     const LARGE_ICON: Val = Val::Px(64.0);
     let icon_style = Style {
         height: LARGE_ICON,
@@ -114,23 +166,15 @@ pub fn setup(mut commands: Commands, weapons: Res<WeaponsResource>) {
                     ..default()
                 })
                 .with_children(|parent| {
-                    parent.spawn((
-                        Exicitement,
-                        ImageBundle {
-                            transform: Transform::from_translation((0.0, 0.0, 102.0).into()),
-                            image: UiImage {
-                                texture: weapons.texture.clone(),
-                                ..default()
-                            },
-
-                            style: icon_style,
-                            ..default()
-                        },
-                        TextureAtlas {
-                            layout: weapons.texture_atlas_layout.clone(),
-                            index: 0,
-                        },
-                    ));
+                    parent.spawn(MaterialNodeBundle {
+                        transform: Transform::from_translation((0.0, 0.0, 102.0).into()),
+                        material: ui_materials.add(CustomUIMaterial {
+                            settings: LevelMeterSettings::default(),
+                            color_texture: Some(asset_server.load("sprites/excite.png")),
+                        }),
+                        style: icon_style,
+                        ..default()
+                    });
                     parent.spawn(TextBundle::from_section(
                         "Excite",
                         TextStyle { ..default() },
@@ -159,5 +203,4 @@ pub fn update_system(
             }
         }
     }
-    //     text.sections[0].value = format!("{}", state.ammo);
 }

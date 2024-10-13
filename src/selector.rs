@@ -30,7 +30,7 @@ pub struct SelectorResource {
 // for now hard coded to 4 weapons on the selection wheel
 // wheel starts empty
 pub fn setup(mut commands: Commands) {
-    let texture_index = vec![0u8, 1, 2, 3];
+    let texture_index = vec![0u8, 1, 2, 3, 4];
     commands.insert_resource({
         SelectorResource {
             texture_index,
@@ -81,7 +81,7 @@ fn selector_spawn(
         }
         .into();
 
-        let angle = (i as f32) * TAU / nr_select;
+        let angle = -(i as f32) * TAU / nr_select;
 
         // TODO, here we might want to use a component with children instead
         commands.spawn((

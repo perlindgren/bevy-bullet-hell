@@ -1,6 +1,6 @@
 use avian2d::prelude::*;
 use bevy::{
-    color::palettes::css::{GREEN, RED, WHITE},
+    color::palettes::css::{RED, WHITE},
     prelude::*,
 };
 
@@ -35,8 +35,7 @@ pub fn update_system(
     mut pr: ResMut<PlayerResource>,
     mut player_query: Query<&mut Transform, With<PlayerComponent>>,
     mut cross_query: Query<&mut Transform, (With<CrossComponent>, Without<PlayerComponent>)>,
-
-    mut gizmos: Gizmos,
+    // mut gizmos: Gizmos,
 ) {
     let mut pt = player_query.single_mut();
     let mut ct = cross_query.single_mut();
@@ -52,7 +51,9 @@ pub fn update_system(
     ct.translation.x = pr.aim_pos.x;
     ct.translation.y = pr.aim_pos.y;
 
-    gizmos.line_gradient_2d(pr.player_pos, pr.aim_pos, RED, GREEN);
+    // there seems to be a bug a dependency so
+    // let's disable the gizmo for now
+    // gizmos.line_gradient_2d(pr.player_pos, pr.aim_pos, RED, GREEN);
 }
 
 pub fn collider_system(mut query: Query<(&mut Sprite, &CollidingEntities), With<PlayerComponent>>) {

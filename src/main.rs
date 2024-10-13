@@ -1,5 +1,6 @@
 use avian2d::{math::*, prelude::*};
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, window::WindowResolution};
+
 use bevy_bullet_hell::{
     block, camera, common::*, gamepad, hud, overlay, player, selector, shooting, tile, ui, weapon,
 };
@@ -31,6 +32,8 @@ fn main() {
             DefaultInspectorConfigPlugin,
             FrameTimeDiagnosticsPlugin,
             TilemapPlugin,
+            // Material2dPlugin::<hud::CustomUIMaterial>::default(),
+            UiMaterialPlugin::<hud::CustomUIMaterial>::default(),
         ))
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(Gravity(Vector::ZERO))
@@ -64,6 +67,7 @@ fn main() {
                 overlay::fps_update_system,
                 ui::update_system,
                 selector::update_system,
+                hud::update_excite_system,
                 hud::update_system,
                 camera::update_system,
             )

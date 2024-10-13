@@ -29,7 +29,7 @@ pub fn weapon_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 #[derive(Component)]
-pub struct Selector(u8);
+pub struct Selector;
 
 #[derive(Component)]
 pub struct SelectorIcon;
@@ -101,7 +101,7 @@ fn selector_spawn(
 
         // TODO, here we might want to use a component with children instead
         commands.spawn((
-            Selector(i as u8),
+            Selector,
             MaterialMesh2dBundle {
                 mesh: shape,
                 material: materials.add(color),
