@@ -1,12 +1,16 @@
-// utilities for game dev
-//
+///! utilities for game dev
+///!
+///! Simple linear interpolation of an envelope
+///! Readings beyond the last envelepe point returns value of the last envelope point
 
+/// Point in envelope
 #[derive(Debug, Copy, Clone)]
 pub struct EnvPoint {
     pub delta_time: f32,
     pub value: f32,
 }
 
+/// Envelope with a star_value
 #[derive(Debug, Clone, Default)]
 pub struct Envelope {
     pub start_value: f32,
