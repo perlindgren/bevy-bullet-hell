@@ -4,18 +4,31 @@ use bevy::{
     diagnostic::FrameTimeDiagnosticsPlugin,
     prelude::*,
     render::{camera::Viewport, view::visibility::RenderLayers},
+    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
     window::WindowResolution,
 };
 
 use bevy_bullet_hell::{
-    block, camera, common::*, gamepad, hud, player, selector, shooting, tile, ui, weapon,
+    block, camera, common::*, gamepad, hud, player, post_process, selector, shooting, tile, ui,
+    weapon,
 };
 use bevy_ecs_tilemap::prelude::*;
 use bevy_inspector_egui::DefaultInspectorConfigPlugin;
 
-fn setup(mut commands: Commands) {
+fn setup(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
     // our main camera, which also holds our UI
-    commands.spawn((Camera2dBundle::default(), IsDefaultUiCamera));
+    commands.spawn((
+        Camera2dBundle::default(),
+        IsDefaultUiCamera,
+        post_process::PostProcessSettings {
+            intensity: 0.02,
+            ..default()
+        },
+    ));
     // custom camera, used for popup sector
 
     commands.spawn((
@@ -60,6 +73,7 @@ fn main() {
             FrameTimeDiagnosticsPlugin,
             TilemapPlugin,
             UiMaterialPlugin::<hud::excite::CustomUIMaterial>::default(),
+            post_process::PostProcessPlugin,
         ))
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(Gravity(Vector::ZERO))
@@ -69,7 +83,7 @@ fn main() {
             (
                 setup,
                 player::setup,
-                block::setup,
+                // block::setup,
                 shooting::setup,
                 tile::setup,
                 ui::setup,
@@ -78,6 +92,7 @@ fn main() {
                 hud::fps::setup,
                 hud::excite::setup,
                 hud::hud_ui::setup,
+                post_process::setup,
             )
                 .chain(),
         )
@@ -87,7 +102,7 @@ fn main() {
                 gamepad::update_system,
                 player::update_system,
                 player::collider_system,
-                block::update_system,
+                // block::update_system,
                 shooting::new_shot_system,
                 shooting::update_system,
                 shooting::collider_system,
@@ -98,6 +113,7 @@ fn main() {
                 hud::excite::update_system,
                 hud::hud_ui::update_system,
                 camera::update_system,
+                post_process::update_system,
             )
                 .chain(),
         )
