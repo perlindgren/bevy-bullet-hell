@@ -4,22 +4,17 @@ use bevy::{
     diagnostic::FrameTimeDiagnosticsPlugin,
     prelude::*,
     render::{camera::Viewport, view::visibility::RenderLayers},
-    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
     window::WindowResolution,
 };
 
 use bevy_bullet_hell::{
-    block, camera, common::*, gamepad, hud, player, post_process, selector, shooting, tile, ui,
-    weapon,
+    /*block,*/ camera, common::*, gamepad, hud, player, post_process, selector, shooting,
+    tile, ui, weapon,
 };
 use bevy_ecs_tilemap::prelude::*;
 use bevy_inspector_egui::DefaultInspectorConfigPlugin;
 
-fn setup(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
+fn setup(mut commands: Commands) {
     // our main camera, which also holds our UI
     commands.spawn((
         Camera2dBundle::default(),

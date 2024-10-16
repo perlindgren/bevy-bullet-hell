@@ -28,8 +28,6 @@ use bevy::{
     time::Stopwatch,
 };
 
-use rand::random;
-
 /// It is generally encouraged to set up post processing effects as a plugin
 pub struct PostProcessPlugin;
 

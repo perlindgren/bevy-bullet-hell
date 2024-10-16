@@ -29,29 +29,48 @@ struct PostProcessSettings {
 }
 @group(0) @binding(2) var<uniform> settings: PostProcessSettings;
 
+
 @fragment
 fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
-    // wave intensity
-    let offset_strength = settings.intensity;
+    let PI = 3.1452;
+    let pi_uv = PI * in.uv;
+    let pi_time = PI * settings.time;
 
-    var dist: f32 = distance(in.uv, settings.epicenter);
+    let offset_x = sin((pi_uv.y * 1.0) + (pi_time * 0.5)) * 0.005;
+    let offset_y = sin((-pi_uv.x * 1.0) + (pi_time * 0.1)) * 0.01;
 
-    let strength : f32 = 10.0;
-    let well : f32 = 2.1;
-    let width: f32 = 0.1;
+    let uv_displaced = vec2<f32>(in.uv.x + offset_x, in.uv.y + offset_y);
+    if (uv_displaced.y > 0.0 && uv_displaced.y < 1.0) {
+    return textureSample(screen_texture, texture_sampler, uv_displaced);
 
-    var texCoord : vec2<f32> = in.uv;
-
-    if ((dist <= (settings.time + width)) && (dist >= (settings.time - width))) {
-        var diff: f32 = dist - settings.time;
-        var powerDiff: f32 = 1.0 - pow(abs(diff * strength), well);
-        var diffTime: f32 = diff * powerDiff;
-        var diffUV: vec2<f32> = normalize(in.uv - settings.epicenter);
-        texCoord = in.uv + diffUV * diffTime;
+    } else {
+    return vec4 (0.0, 0.0, 0.0, 0.0);
     }
 
-    return textureSample(screen_texture, texture_sampler, texCoord);
 }
+// @fragment
+// fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
+//     let ratio : vec2<f32> = vec2(16.0/9.0, 1.0);
+//     let dist: f32 = distance(ratio * in.uv, ratio * settings.epicenter);
+
+//     let strength : f32 = 5.0;
+//     let well : f32 = 5.0;
+//     let width: f32 = 0.05;
+//     let speed: f32 = 0.5;
+//     var ts = speed * settings.time;
+
+//     var texCoord : vec2<f32> = in.uv;
+
+//     if ((dist <= (ts + width)) && (dist >= (ts - width))) {
+//         var diff: f32 = dist - ts;
+//         var powerDiff: f32 = 1.0 - pow(abs(diff * strength), well);
+//         var diffTime: f32 = diff * powerDiff;
+//         var diffUV: vec2<f32> = normalize(ratio * in.uv - ratio * settings.epicenter);
+//         texCoord = in.uv + diffUV * diffTime;
+//     }
+
+//     return textureSample(screen_texture, texture_sampler, texCoord);
+// }
 
 // https://www.shadertoy.com/view/XsXGR7
 //
