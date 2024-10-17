@@ -5,6 +5,7 @@ pub mod config;
 pub mod gamepad;
 pub mod hud;
 pub mod keyboard;
+pub mod layers;
 pub mod mouse;
 pub mod player;
 pub mod post_process;

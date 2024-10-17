@@ -3,6 +3,7 @@ use bevy::prelude::*;
 
 use crate::{
     common::*,
+    layers::CollisionLayer,
     player::{PlayerComponent, PlayerResource},
 };
 
@@ -44,7 +45,9 @@ pub fn new_shot_system(
             },
             Collider::rectangle(10.0, 10.0),
             MassPropertiesBundle::new_computed(&Collider::rectangle(10.0, 10.0), 1.0),
-            Sensor,
+            //           Sensor,
+            // this is a player bullet and may interact with enemies
+            CollisionLayers::new(CollisionLayer::PlayerBullet, CollisionLayer::Enemy),
             RigidBody::Dynamic,
         ));
     }

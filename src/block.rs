@@ -1,4 +1,4 @@
-use crate::common::*;
+use crate::{common::*, layers::CollisionLayer};
 use avian2d::prelude::*;
 use bevy::{
     prelude::*,
@@ -63,6 +63,10 @@ pub fn setup(
                 ..default()
             },
             RigidBody::Dynamic,
+            CollisionLayers::new(
+                CollisionLayer::Enemy,
+                [CollisionLayer::Player, CollisionLayer::PlayerBullet],
+            ),
             Collider::rectangle(50.0, 100.0),
         ));
     }
