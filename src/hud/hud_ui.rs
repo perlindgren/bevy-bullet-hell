@@ -48,7 +48,7 @@ pub fn setup(
                         border: UiRect::all(HID_BORDER_PX),
                         ..default()
                     },
-                    background_color: HID_BACKGOUND_COLOR.into(),
+                    background_color: HID_BACKGROUND_COLOR.into(),
                     border_color: HID_BORDER_COLOR.into(),
                     ..default()
                 })
@@ -81,7 +81,7 @@ pub fn setup(
                         border: UiRect::all(Val::Px(5.0)),
                         ..default()
                     },
-                    background_color: HID_BACKGOUND_COLOR.into(),
+                    background_color: HID_BACKGROUND_COLOR.into(),
                     border_color: HID_BORDER_COLOR.into(),
                     ..default()
                 })
@@ -109,7 +109,7 @@ pub fn setup(
                         border: UiRect::all(HID_BORDER_PX),
                         ..default()
                     },
-                    background_color: HID_BACKGOUND_COLOR.into(),
+                    background_color: HID_BACKGROUND_COLOR.into(),
                     border_color: HID_BORDER_COLOR.into(),
                     ..default()
                 })

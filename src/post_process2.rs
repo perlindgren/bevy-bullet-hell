@@ -29,13 +29,13 @@ use bevy::{
 };
 
 /// It is generally encouraged to set up post processing effects as a plugin
-pub struct PostProcessPlugin;
+pub struct PostProcessPlugin2;
 
-impl Plugin for PostProcessPlugin {
+impl Plugin for PostProcessPlugin2 {
     fn build(&self, app: &mut App) {
         app.add_plugins((
-            ExtractComponentPlugin::<PostProcessSettings>::default(),
-            UniformComponentPlugin::<PostProcessSettings>::default(),
+            ExtractComponentPlugin::<PostProcessSettings2>::default(),
+            UniformComponentPlugin::<PostProcessSettings2>::default(),
         ));
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
@@ -43,12 +43,12 @@ impl Plugin for PostProcessPlugin {
         };
 
         render_app
-            .add_render_graph_node::<ViewNodeRunner<PostProcessNode>>(Core2d, PostProcessLabel)
+            .add_render_graph_node::<ViewNodeRunner<PostProcessNode2>>(Core2d, PostProcessLabel2)
             .add_render_graph_edges(
                 Core2d,
                 (
                     Node2d::Tonemapping,
-                    PostProcessLabel,
+                    PostProcessLabel2,
                     Node2d::EndMainPassPostProcessing,
                 ),
             );
@@ -59,21 +59,21 @@ impl Plugin for PostProcessPlugin {
             return;
         };
 
-        render_app.init_resource::<PostProcessPipeline>();
+        render_app.init_resource::<PostProcessPipeline2>();
     }
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, RenderLabel)]
-struct PostProcessLabel;
+struct PostProcessLabel2;
 
 #[derive(Default)]
-struct PostProcessNode;
+struct PostProcessNode2;
 
-impl ViewNode for PostProcessNode {
+impl ViewNode for PostProcessNode2 {
     type ViewQuery = (
         &'static ViewTarget,
-        &'static PostProcessSettings,
-        &'static DynamicUniformIndex<PostProcessSettings>,
+        &'static PostProcessSettings2,
+        &'static DynamicUniformIndex<PostProcessSettings2>,
     );
 
     fn run(
@@ -83,7 +83,7 @@ impl ViewNode for PostProcessNode {
         (view_target, _post_process_settings, settings_index): QueryItem<Self::ViewQuery>,
         world: &World,
     ) -> Result<(), NodeRunError> {
-        let post_process_pipeline = world.resource::<PostProcessPipeline>();
+        let post_process_pipeline = world.resource::<PostProcessPipeline2>();
 
         let pipeline_cache = world.resource::<PipelineCache>();
 
@@ -92,7 +92,7 @@ impl ViewNode for PostProcessNode {
             return Ok(());
         };
 
-        let settings_uniforms = world.resource::<ComponentUniforms<PostProcessSettings>>();
+        let settings_uniforms = world.resource::<ComponentUniforms<PostProcessSettings2>>();
         let Some(settings_binding) = settings_uniforms.uniforms().binding() else {
             return Ok(());
         };
@@ -130,13 +130,13 @@ impl ViewNode for PostProcessNode {
 }
 
 #[derive(Resource)]
-struct PostProcessPipeline {
+struct PostProcessPipeline2 {
     layout: BindGroupLayout,
     sampler: Sampler,
     pipeline_id: CachedRenderPipelineId,
 }
 
-impl FromWorld for PostProcessPipeline {
+impl FromWorld for PostProcessPipeline2 {
     fn from_world(world: &mut World) -> Self {
         let render_device = world.resource::<RenderDevice>();
 
@@ -147,13 +147,13 @@ impl FromWorld for PostProcessPipeline {
                 (
                     texture_2d(TextureSampleType::Float { filterable: true }),
                     sampler(SamplerBindingType::Filtering),
-                    uniform_buffer::<PostProcessSettings>(true),
+                    uniform_buffer::<PostProcessSettings2>(true),
                 ),
             ),
         );
 
         let sampler = render_device.create_sampler(&SamplerDescriptor::default());
-        let shader = world.load_asset("shaders/shockwave.wgsl");
+        let shader = world.load_asset("shaders/waves.wgsl");
 
         let pipeline_id =
             world
@@ -188,19 +188,19 @@ impl FromWorld for PostProcessPipeline {
 
 // shared with the shader
 #[derive(Component, Default, Clone, Copy, ExtractComponent, ShaderType)]
-pub struct PostProcessSettings {
+pub struct PostProcessSettings2 {
     pub intensity: f32,
     pub time: f32,
     pub epicenter: Vec2,
 }
 
 #[derive(Resource, Default)]
-pub struct PostProcResource {
+pub struct PostProcResource2 {
     timer: Stopwatch,
 }
 
 pub fn setup(mut commands: Commands) {
-    commands.init_resource::<PostProcResource>();
+    commands.init_resource::<PostProcResource2>();
 }
 
 use crate::{common::*, player::PlayerResource};
@@ -208,10 +208,10 @@ use crate::{common::*, player::PlayerResource};
 
 pub fn update_system(
     time_r: Res<Time>,
-    mut timer_r: ResMut<PostProcResource>,
+    mut timer_r: ResMut<PostProcResource2>,
     player_r: Res<PlayerResource>,
     keys: Res<ButtonInput<KeyCode>>,
-    mut settings: Query<&mut PostProcessSettings>,
+    mut settings: Query<&mut PostProcessSettings2>,
     camera_q: Query<(&Camera, &GlobalTransform), Without<CustomCamera>>,
 ) {
     for mut setting in &mut settings {

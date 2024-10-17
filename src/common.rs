@@ -45,14 +45,14 @@ pub const SELECTOR_RADIUS_ICON: f32 = 100.0;
 pub const SELECTOR_SIZE: u32 = SELECTOR_RADIUS as u32 * 2;
 pub const SELECTOR_BOTTOM: u32 = 40;
 
-pub const SPRITE_SHEET: &'static str = "sprites/Sprite-sheet.png";
+pub const SPRITE_SHEET: &str = "sprites/Sprite-sheet.png";
 
 pub const HID_HEIGHT: u32 = 120;
 pub const HID_HEIGHT_PX: Val = Val::Px(HID_HEIGHT as f32);
 pub const HID_BORDER_PX: Val = Val::Px(5.0);
 pub const HID_WIDTH_PX: Val = Val::Px(120.0);
 
-pub const HID_BACKGOUND_COLOR: Srgba = css::SKY_BLUE;
+pub const HID_BACKGROUND_COLOR: Srgba = css::SKY_BLUE;
 pub const HID_BORDER_COLOR: Srgba = css::BLUE;
 
 #[derive(Component)]

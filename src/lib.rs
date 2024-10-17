@@ -5,6 +5,7 @@ pub mod gamepad;
 pub mod hud;
 pub mod player;
 pub mod post_process;
+pub mod post_process2;
 pub mod selector;
 pub mod shooting;
 pub mod tile;

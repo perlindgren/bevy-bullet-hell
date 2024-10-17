@@ -4,13 +4,17 @@
     "Roguelite",
     "Srgba",
     "Tilemap",
+    "Tonemapping",
     "consts",
     "despawn",
     "egui",
+    "fullscreen",
     "gamepad",
     "gamepads",
     "lazer",
+    "multisample",
     "replayability",
-    "segs"
+    "segs",
+    "wgsl"
   ]
 }
