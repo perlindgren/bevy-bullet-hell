@@ -2,6 +2,7 @@ pub mod block;
 pub mod camera;
 pub mod common;
 pub mod config;
+pub mod dev_input;
 pub mod gamepad;
 pub mod hud;
 pub mod keyboard;

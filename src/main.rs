@@ -4,15 +4,15 @@ use bevy::{
     diagnostic::FrameTimeDiagnosticsPlugin,
     prelude::*,
     render::{camera::Viewport, view::visibility::RenderLayers},
-    window::WindowResolution,
+    window::{Cursor, CursorGrabMode, WindowResolution},
 };
 
 use bevy_bullet_hell::{
     block, camera,
     common::*,
     config::{self, ConfigResource},
-    gamepad, hud, keyboard, mouse, player, post_process, post_process2, selector, shooting, tile,
-    ui_egui, weapon,
+    dev_input, gamepad, hud, keyboard, mouse, player, post_process, post_process2, selector,
+    shooting, tile, ui_egui, weapon,
 };
 use bevy_ecs_tilemap::prelude::*;
 use bevy_inspector_egui::DefaultInspectorConfigPlugin;
@@ -67,6 +67,11 @@ fn main() {
                         resizable: false,
                         title: "Bevy-Bullet-Hell".to_string(),
                         desired_maximum_frame_latency: core::num::NonZero::new(1u32),
+                        cursor: bevy::window::Cursor {
+                            grab_mode: bevy::window::CursorGrabMode::Locked,
+                            visible: false,
+                            ..default()
+                        },
                         ..default()
                     }),
                     ..default()
@@ -88,6 +93,7 @@ fn main() {
             Startup,
             (
                 setup,
+                dev_input::setup,
                 config::setup,
                 player::setup,
                 block::setup,
@@ -112,13 +118,14 @@ fn main() {
                 keyboard::update_system.run_if(resource_equals::<ConfigResource>(ConfigResource {
                     gamepad: false,
                 })),
-                mouse::update_system.run_if(resource_equals::<ConfigResource>(ConfigResource {
-                    gamepad: false,
-                })),
+                // mouse::update_system.run_if(resource_equals::<ConfigResource>(ConfigResource {
+                //     gamepad: false,
+                // })),
                 mouse::reset_vector.run_if(resource_changed::<ConfigResource>),
                 gamepad::update_system.run_if(resource_equals::<ConfigResource>(ConfigResource {
                     gamepad: true,
                 })),
+                dev_input::update_system,
                 player::update_system,
                 block::update_system,
                 shooting::new_shot_system,

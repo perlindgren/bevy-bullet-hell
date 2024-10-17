@@ -22,6 +22,7 @@ bevy = { version = "0.14.2", features = [
 ] }
 bevy-inspector-egui = "0.26.0"
 bevy_egui = "0.29.*"
+nonblock = "0.2.0"
 
 
 # bevy = { version = "0.14.2" }
