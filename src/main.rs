@@ -8,8 +8,11 @@ use bevy::{
 };
 
 use bevy_bullet_hell::{
-    block, camera, common::*, gamepad, hud, player, post_process, post_process2, selector,
-    shooting, tile, ui, weapon,
+    block, camera,
+    common::*,
+    config::{self, ConfigResource},
+    gamepad, hud, keyboard, mouse, player, post_process, post_process2, selector, shooting, tile,
+    ui_egui, weapon,
 };
 use bevy_ecs_tilemap::prelude::*;
 use bevy_inspector_egui::DefaultInspectorConfigPlugin;
@@ -31,7 +34,7 @@ fn setup(mut commands: Commands) {
         },
     ));
     // custom camera, used for popup sector
-    let mut custom_camera = Camera2dBundle {
+    let custom_camera = Camera2dBundle {
         camera: Camera {
             order: 1,
 
@@ -85,11 +88,12 @@ fn main() {
             Startup,
             (
                 setup,
+                config::setup,
                 player::setup,
                 block::setup,
                 shooting::setup,
                 tile::setup,
-                ui::setup,
+                ui_egui::setup,
                 weapon::setup,
                 selector::setup,
                 hud::fps::setup,
@@ -103,14 +107,25 @@ fn main() {
         .add_systems(
             Update,
             (
-                gamepad::update_system,
+                // there is 100% a better way of doing this, probably split configresource
+                // into more specific resources and bundle it?
+                keyboard::update_system.run_if(resource_equals::<ConfigResource>(ConfigResource {
+                    gamepad: false,
+                })),
+                mouse::update_system.run_if(resource_equals::<ConfigResource>(ConfigResource {
+                    gamepad: false,
+                })),
+                mouse::reset_vector.run_if(resource_changed::<ConfigResource>),
+                gamepad::update_system.run_if(resource_equals::<ConfigResource>(ConfigResource {
+                    gamepad: true,
+                })),
                 player::update_system,
                 player::collider_system,
                 block::update_system,
                 shooting::new_shot_system,
                 shooting::update_system,
                 shooting::collider_system,
-                ui::update_system,
+                ui_egui::update_system,
                 selector::update_system,
                 hud::fps::update_system,
                 hud::excite::keyboard_input, // for debugging
