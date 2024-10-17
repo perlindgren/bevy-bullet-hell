@@ -135,6 +135,7 @@ fn main() {
                 camera::update_system,
                 post_process::update_system,
                 post_process2::update_system,
+                post_process::update_shockwaves,
             )
                 .chain(),
         )
