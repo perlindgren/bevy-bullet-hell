@@ -18,5 +18,5 @@ fn setup(mut command: Commands) {
         network_path: "".to_string(),
         connected: false,
     };
-    command.insert_resource(NetResource {});
+    command.insert_resource(net);
 }
