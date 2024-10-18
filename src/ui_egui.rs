@@ -1,4 +1,4 @@
-use crate::{config::ConfigResource, player::PlayerResource};
+use crate::{config::ConfigResource, net::NetUIResource, player::PlayerResource};
 use bevy::{prelude::*, window::WindowResolution};
 use bevy_egui::{egui, EguiContext};
 
@@ -32,6 +32,9 @@ pub fn update_system(world: &mut World) {
         });
         egui::CollapsingHeader::new("Config").show(ui, |ui| {
             bevy_inspector_egui::bevy_inspector::ui_for_resource::<ConfigResource>(world, ui)
-        })
+        });
+        egui::CollapsingHeader::new("Network").show(ui, |ui| {
+            bevy_inspector_egui::bevy_inspector::ui_for_resource::<NetUIResource>(world, ui)
+        });
     });
 }

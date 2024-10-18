@@ -8,6 +8,7 @@ pub mod hud;
 pub mod keyboard;
 pub mod layers;
 pub mod mouse;
+pub mod net;
 pub mod player;
 pub mod post_process;
 pub mod post_process2;
