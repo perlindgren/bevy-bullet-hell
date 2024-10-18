@@ -25,6 +25,7 @@ bevy_egui = "0.29.*"
 
 [target.'cfg(windows)'.dependencies]
 multiinput = "0.1.0"
+heapless = {version = "0.8.0", features = ["mpmc_large"]}
 
 [target.'cfg(not(windows))'.dependencies]
 nonblock = "0.2.0"
