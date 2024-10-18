@@ -4,7 +4,7 @@ use bevy::{
     diagnostic::FrameTimeDiagnosticsPlugin,
     prelude::*,
     render::{camera::Viewport, view::visibility::RenderLayers},
-    window::{Cursor, CursorGrabMode, WindowResolution},
+    window::WindowResolution,
 };
 
 use bevy_bullet_hell::{

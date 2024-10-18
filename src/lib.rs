@@ -2,7 +2,6 @@ pub mod block;
 pub mod camera;
 pub mod common;
 pub mod config;
-pub mod dev_input;
 pub mod gamepad;
 pub mod hud;
 pub mod keyboard;
@@ -18,3 +17,6 @@ pub mod tile;
 pub mod ui_egui;
 pub mod utils;
 pub mod weapon;
+
+// for now, raw input is unimplemented on windows, this allows crate to build anyways
+pub mod dev_input;
