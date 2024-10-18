@@ -2,7 +2,10 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use heapless::mpmc::*;
 use multiinput::{DeviceType, RawEvent, RawInputManager};
 
-use crate::{common::CustomCamera, player::DeltaResource};
+use crate::{
+    common::CustomCamera,
+    player::{DeltaResource, PlayerResource},
+};
 
 const QUEUE_SIZE: usize = 1024; // this should be enough for 1 sec / amount of players worth of data (mouse is polled at 1kHz typically)
 
@@ -21,7 +24,7 @@ pub struct DevInput<'a> {
 }
 
 pub fn setup(mut commands: Commands) {
-    // technically i think there is only one consumer so a SPSC would probably be enough,
+    // technically i think there is only one consumer so not wrapping this in a queue would probably be fine,
     // but i don't know how to prove this to bevy.
     let mouse_mpmc: &'static MouseQueue = {
         static mut MPMC: MouseQueue = MpMcQueue::new();
@@ -58,11 +61,12 @@ pub fn setup(mut commands: Commands) {
 pub fn update_system(
     mut dev_input_r: ResMut<DevInput<'static>>,
     mut delta_r: ResMut<DeltaResource>,
+    player_r: Res<PlayerResource>,
     // q_windows: Query<&Window, With<PrimaryWindow>>,
-    // q_camera: Query<(&Camera, &GlobalTransform), Without<CustomCamera>>,
+    q_camera: Query<(&Camera, &GlobalTransform), Without<CustomCamera>>,
 ) {
-    // let (camera, camera_transform) = q_camera.single();
-    'outer: loop {
+    let (camera, camera_transform) = q_camera.single();
+    loop {
         match dev_input_r.mouse_queue.dequeue() {
             Some(packet) => {
                 trace!("Input: {:?}", packet);
@@ -71,9 +75,21 @@ pub fn update_system(
                 // windows apparently uses fly simulator deltas so y is inverted xD
                 dev_input_r.pos.y -= packet.1 .1 as f32 * 0.5;
             }
-            None => break 'outer, // all input now dequeued
+            None => break, // all input now dequeued
         }
     }
+    dev_input_r.pos = dev_input_r.pos.clamp_length(0.0, 500.0);
+    //dev_input_r.pos = dev_input_r.pos / 500.0;
+    println!("pos: {:?}", dev_input_r.pos);
+    //let world_position = camera
+    //    .viewport_to_world(camera_transform, dev_input_r.pos)
+    //    .map(|ray| ray.origin.truncate())
+    //    .unwrap();
+
+    // let delta = world_position - player_r.player_pos;
+    //let delta = delta / 500.0;
+    // let delta = delta.clamp_length(0.0, 1.0);
+    // delta_r.aim_delta = delta;
 
     let delta: Vec2 = dev_input_r.pos / 500.0;
     let delta = delta.clamp_length(0.0, 1.0);
