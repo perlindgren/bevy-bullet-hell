@@ -30,10 +30,12 @@ multiinput = "0.1.0"
 heapless = { version = "0.8.0", features = ["mpmc_large"] }
 
 [target.'cfg(not(windows))'.dependencies]
-nonblock = "0.2.0"
 
+
+nonblock = "0.2.0"
 input-linux-tools = { git = "https://github.com/perlindgren/input-linux-tools.git" }
 
+# input-linux-tools = { path = "../input-linux-tools" }
 # bevy = { version = "0.14.2" }
 # Enable a small amount of optimization in the dev profile.
 [profile.dev]
