@@ -78,20 +78,20 @@ pub fn update_system(
             None => break, // all input now dequeued
         }
     }
-    dev_input_r.pos = dev_input_r.pos.clamp_length(0.0, 500.0);
+    //dev_input_r.pos = dev_input_r.pos.clamp_length(0.0, 500.0);
     //dev_input_r.pos = dev_input_r.pos / 500.0;
     println!("pos: {:?}", dev_input_r.pos);
-    //let world_position = camera
-    //    .viewport_to_world(camera_transform, dev_input_r.pos)
-    //    .map(|ray| ray.origin.truncate())
-    //    .unwrap();
-
+    let world_position = camera
+        .viewport_to_world(camera_transform, dev_input_r.pos)
+        .map(|ray| ray.origin.truncate())
+        .unwrap();
+    println!("world pos: {:?}", world_position);
     // let delta = world_position - player_r.player_pos;
     //let delta = delta / 500.0;
     // let delta = delta.clamp_length(0.0, 1.0);
     // delta_r.aim_delta = delta;
-
-    let delta: Vec2 = dev_input_r.pos / 500.0;
+    let delta = dev_input_r.pos - player_r.player_pos;
+    let delta: Vec2 = delta / 500.0;
     let delta = delta.clamp_length(0.0, 1.0);
     delta_r.aim_delta = delta;
 }
