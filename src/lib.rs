@@ -20,3 +20,5 @@ pub mod weapon;
 
 // for now, raw input is unimplemented on windows, this allows crate to build anyways
 pub mod dev_input;
+pub mod input_cfg;
+pub mod ui_egui_cfg;

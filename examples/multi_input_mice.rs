@@ -1,7 +1,8 @@
 // mouse events
 use bevy::prelude::*;
+use bevy_bullet_hell::{input_cfg, ui_egui_cfg};
+use bevy_inspector_egui::DefaultInspectorConfigPlugin;
 use input_linux_tools::mouse::*;
-use std::{thread, time};
 
 fn main() {
     App::new()
@@ -19,10 +20,12 @@ fn main() {
                 ..default()
             }),
             bevy_framepace::FramepacePlugin,
+            bevy_egui::EguiPlugin,
+            DefaultInspectorConfigPlugin,
         ))
         .insert_resource(ClearColor(Color::BLACK))
-        .add_systems(Startup, setup)
-        .add_systems(Update, update_system)
+        .add_systems(Startup, (setup, input_cfg::setup, ui_egui_cfg::setup))
+        .add_systems(Update, (update_system, ui_egui_cfg::update_system))
         .run();
 }
 
@@ -50,8 +53,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 
     let mut mice = vec![];
-    mice.push(Mouse::new_first_match("Laser", false).unwrap());
-    mice.push(Mouse::new_first_match("Dell", false).unwrap());
+    mice.push(Mouse::new_first_match("Contour", false).unwrap());
+    mice.push(Mouse::new_first_match("Pulsefire", false).unwrap());
     commands.insert_resource(Mice { mice });
 }
 
@@ -68,10 +71,7 @@ pub fn update_system(
     let speed = 50.0;
     let time_speed_delta = time.delta_seconds() * speed;
     for (index, mouse) in mice_input.mice.iter().enumerate() {
-        let mut nr_events_in_frame = 0;
         while let Some(event) = mouse.read() {
-            nr_events_in_frame += 1;
-            // println!("event {:?}", event);
             match event {
                 MouseEvent::MotionEvent(motion) => {
                     if let Some((mut t, _)) =
@@ -83,9 +83,6 @@ pub fn update_system(
                 }
                 _ => {}
             }
-        }
-        if nr_events_in_frame != 0 {
-            println!("nr events in frame {}", nr_events_in_frame);
         }
     }
 }
