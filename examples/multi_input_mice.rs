@@ -53,8 +53,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 
     let mut mice = vec![];
-    mice.push(Mouse::new_first_match("Contour", false).unwrap());
-    mice.push(Mouse::new_first_match("Pulsefire", false).unwrap());
+    // mice.push(Mouse::new_first_match("Contour", false).unwrap());
+    // mice.push(Mouse::new_first_match("Pulsefire", false).unwrap());
     commands.insert_resource(Mice { mice });
 }
 

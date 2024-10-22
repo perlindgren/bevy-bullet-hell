@@ -2,6 +2,8 @@ use crate::input_cfg::*;
 use bevy::{prelude::*, window::WindowResolution};
 use bevy_egui::{egui, EguiContext};
 use input_linux_tools::device::*;
+use rfd::FileDialog;
+use std::fs;
 
 #[derive(Component)]
 pub struct EditorCfgWindow;
@@ -65,18 +67,59 @@ fn select_device(ui: &mut egui::Ui, devices: &Devices, input: &mut Option<Device
 }
 pub fn update_system(
     mut player_input_r: ResMut<PlayerInput>,
+    input_devices_r: Res<InputDevices>,
     mut egui_q: Query<&mut EguiContext, With<EditorCfgWindow>>,
 ) {
     let mut egui_context = egui_q.single_mut();
-
     egui::Window::new("Player Input Configuration").show(egui_context.get_mut(), |ui| {
-        ui.label("Player");
+        ui.horizontal(|ui| {
+            // if ui.radio(selected, text)
+            if ui.button("Save Config").clicked() {
+                if let Some(path) = FileDialog::new()
+                    .add_filter("ron", &["ron"])
+                    .set_directory(player_input_r.path.parent().unwrap())
+                    .set_file_name(player_input_r.path.file_name().unwrap().to_str().unwrap())
+                    .save_file()
+                {
+                    // update path in case changed
+                    player_input_r.path = path.clone();
+                    let str = ron::ser::to_string_pretty(
+                        &*player_input_r,
+                        ron::ser::PrettyConfig::default(),
+                    )
+                    .unwrap();
+                    let _ = fs::write(path, str);
+                }
+            };
+
+            if ui.button("Load Config").clicked() {
+                if let Some(path) = FileDialog::new()
+                    .add_filter("ron", &["ron"])
+                    .set_directory(player_input_r.path.parent().unwrap())
+                    .set_file_name(player_input_r.path.file_name().unwrap().to_str().unwrap())
+                    .pick_file()
+                {
+                    if let Ok(bytes) = fs::read(path) {
+                        let ron: Result<PlayerInput, _> = ron::de::from_bytes(&bytes);
+                        match ron {
+                            Ok(player_input) => {
+                                *player_input_r = player_input;
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+            };
+        });
 
         let PlayerInput {
-            devices,
             pos_input,
             aim_input,
+            path: _,
         } = &mut *player_input_r; // reborrow
+        ui.label("Player");
+
+        let InputDevices { devices } = &*input_devices_r;
 
         egui::CollapsingHeader::new("Pos").show(ui, |ui| {
             select_device(ui, devices, pos_input);

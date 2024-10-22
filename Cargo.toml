@@ -23,6 +23,9 @@ bevy = { version = "0.14.2", features = [
 bevy-inspector-egui = "0.27.0"
 bevy_egui = "0.30.0"
 bevy_framepace = "0.17.1"
+ron = "0.8.1"
+serde = { version = "1.0.211", features = ["derive"] }
+rfd = "0.15.0"
 
 
 [target.'cfg(windows)'.dependencies]
