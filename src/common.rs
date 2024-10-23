@@ -24,6 +24,8 @@ pub const SCREEN_RECT: Rect = Rect {
     max: SCREEN_MAX,
 };
 
+pub const NR_PLAYERS: usize = 2;
+
 pub const PLAYER_SPEED: f32 = 500.0;
 
 pub const BLOCK_ROTATION_SPEED: f32 = 10.0;

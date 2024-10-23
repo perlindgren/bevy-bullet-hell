@@ -66,24 +66,33 @@ fn select_device(ui: &mut egui::Ui, devices: &Devices, input: &mut Option<Device
         });
 }
 
+fn select_devices(ui: &mut egui::Ui, config_input: &mut ConfigInput, devices: &Devices) {
+    let ConfigInput {
+        pos_input,
+        aim_input,
+        path: _,
+    } = config_input; // reborrow
+    ui.label("Player");
+
+    // let InputDevices { devices } = &*input_devices_r;
+
+    egui::CollapsingHeader::new("Pos").show(ui, |ui| {
+        select_device(ui, devices, pos_input);
+    });
+    egui::CollapsingHeader::new("Aim").show(ui, |ui| {
+        select_device(ui, devices, aim_input);
+    });
+}
+
 pub fn update_system(
     mut config_input_r: ResMut<ConfigInput>,
-    mut inputs_r: ResMut<Inputs>,
+    //mut inputs_r: ResMut<Inputs>,
     input_devices_r: Res<InputDevices>,
     mut egui_q: Query<&mut EguiContext, With<EditorCfgWindow>>,
 ) {
     let mut egui_context = egui_q.single_mut();
 
     egui::Window::new("Player Input Configuration").show(egui_context.get_mut(), |ui| {
-        if ui
-            .radio(
-                inputs_r.pos_input.is_some(),
-                format!("Pos :{:?}", inputs_r.pos_input),
-            )
-            .clicked()
-        {
-            inputs_r.pos_input = DeviceType::connect(&config_input_r.pos_input);
-        }
         ui.horizontal(|ui| {
             if ui.button("Save Config").clicked() {
                 if let Some(path) = FileDialog::new()
@@ -122,21 +131,16 @@ pub fn update_system(
                 }
             };
         });
-
-        let ConfigInput {
-            pos_input,
-            aim_input,
-            path: _,
-        } = &mut *config_input_r; // reborrow
-        ui.label("Player");
-
-        let InputDevices { devices } = &*input_devices_r;
-
-        egui::CollapsingHeader::new("Pos").show(ui, |ui| {
-            select_device(ui, devices, pos_input);
-        });
-        egui::CollapsingHeader::new("Aim").show(ui, |ui| {
-            select_device(ui, devices, aim_input);
-        });
+        // for (index, input) in inputs_r.inputs.iter().enumerate() {
+        //         if ui
+        //             .radio(
+        //                 input.pos_input.is_some(),
+        //                 format!("Pos :{:?}", input.pos_input),
+        //             )
+        //             .clicked()
+        //         {
+        //             input.pos_input = DeviceType::connect(&config_input_r.pos_input);
+        //         }
+        select_devices(ui, &mut *config_input_r, &input_devices_r.devices);
     });
 }

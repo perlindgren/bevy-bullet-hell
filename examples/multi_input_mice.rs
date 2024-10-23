@@ -55,26 +55,27 @@ pub fn update_system(
 ) {
     let speed = 50.0;
     let time_speed_delta = time.delta_seconds() * speed;
-    // for (index, mouse) in mice_input.mice.iter().enumerate() {
-    if let Some(input) = &inputs_r.pos_input {
-        match input {
-            DeviceType::Mouse(mouse, _) => {
-                while let Some(event) = mouse.read() {
-                    match event {
-                        MouseEvent::MotionEvent(motion) => {
-                            if let Some((mut t, _)) =
-                                player_q.iter_mut().find(|(_t, Player(nr))| (*nr == 0))
-                            {
-                                t.translation.x += motion.delta.x * time_speed_delta;
-                                t.translation.y -= motion.delta.y * time_speed_delta;
-                                // evdev delta in other direction
+    for (index, input) in inputs_r.inputs.iter().enumerate() {
+        if let Some(input) = &input.pos_input {
+            match input {
+                DeviceType::Mouse(mouse, _) => {
+                    while let Some(event) = mouse.read() {
+                        match event {
+                            MouseEvent::MotionEvent(motion) => {
+                                if let Some((mut t, _)) =
+                                    player_q.iter_mut().find(|(_t, Player(nr))| (*nr == index))
+                                {
+                                    t.translation.x += motion.delta.x * time_speed_delta;
+                                    t.translation.y -= motion.delta.y * time_speed_delta;
+                                    // evdev delta in other direction
+                                }
                             }
+                            _ => {}
                         }
-                        _ => {}
                     }
                 }
+                _ => {}
             }
-            _ => {}
         }
     }
 }

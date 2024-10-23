@@ -1,12 +1,8 @@
+use crate::common::*;
 use bevy::prelude::*;
-use input_linux_tools::{device::*, input_linux::EvdevHandle};
+use input_linux_tools::device::*;
 use serde::{Deserialize, Serialize};
-use std::{
-    any::Any,
-    env::current_dir,
-    fs::{self, File},
-    path::PathBuf,
-};
+use std::{env::current_dir, fs, path::PathBuf};
 
 #[derive(Resource, Debug, Serialize, Deserialize)]
 pub struct ConfigInput {
@@ -45,11 +41,20 @@ pub fn setup(mut commands: Commands) {
     }
     println!("config_input :{:?}", config_input);
     commands.insert_resource(config_input);
-    commands.insert_resource(Inputs::default());
+    let mut inputs = vec![];
+    for _ in 0..NR_PLAYERS {
+        inputs.push(Input::default());
+    }
+    commands.insert_resource(Inputs { inputs });
+}
+
+#[derive(Debug, Default)]
+pub struct Input {
+    pub pos_input: Option<DeviceType>,
+    pub aim_input: Option<DeviceType>,
 }
 
 #[derive(Resource, Default, Debug)]
 pub struct Inputs {
-    pub pos_input: Option<DeviceType>,
-    pub aim_input: Option<DeviceType>,
+    pub inputs: Vec<Input>,
 }
