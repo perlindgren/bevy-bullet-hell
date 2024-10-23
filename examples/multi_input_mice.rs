@@ -50,32 +50,32 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 pub fn update_system(
     time: Res<Time>,
-    inputs_r: Res<input_cfg::Inputs>,
+    players_input_r: Res<input_cfg::PlayersInput>,
     mut player_q: Query<(&mut Transform, &Player)>,
 ) {
     let speed = 50.0;
     let time_speed_delta = time.delta_seconds() * speed;
-    for (index, input) in inputs_r.inputs.iter().enumerate() {
-        if let Some(input) = &input.pos_input {
-            match input {
-                DeviceType::Mouse(mouse, _) => {
-                    while let Some(event) = mouse.read() {
-                        match event {
-                            MouseEvent::MotionEvent(motion) => {
-                                if let Some((mut t, _)) =
-                                    player_q.iter_mut().find(|(_t, Player(nr))| (*nr == index))
-                                {
-                                    t.translation.x += motion.delta.x * time_speed_delta;
-                                    t.translation.y -= motion.delta.y * time_speed_delta;
-                                    // evdev delta in other direction
-                                }
-                            }
-                            _ => {}
-                        }
-                    }
-                }
-                _ => {}
-            }
-        }
+    for (index, input) in players_input_r.player_input.iter().enumerate() {
+        // if let Some(input) = &input.pos_input {
+        //     match input {
+        //         DeviceType::Mouse(mouse, _) => {
+        //             while let Some(event) = mouse.read() {
+        //                 match event {
+        //                     MouseEvent::MotionEvent(motion) => {
+        //                         if let Some((mut t, _)) =
+        //                             player_q.iter_mut().find(|(_t, Player(nr))| (*nr == index))
+        //                         {
+        //                             t.translation.x += motion.delta.x * time_speed_delta;
+        //                             t.translation.y -= motion.delta.y * time_speed_delta;
+        //                             // evdev delta in other direction
+        //                         }
+        //                     }
+        //                     _ => {}
+        //                 }
+        //             }
+        //         }
+        //         _ => {}
+        //     }
+        // }
     }
 }

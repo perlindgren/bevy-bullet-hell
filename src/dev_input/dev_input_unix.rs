@@ -10,7 +10,7 @@ pub struct DevInput {
 }
 
 pub fn setup(mut commands: Commands) {
-    let file = File::open("/dev/input/mouse1").unwrap();
+    let file = File::open("/dev/input/by-id/usb-Mouse_USB_Laser_Mouse-mouse").unwrap();
     let nb_dev_input = NonBlockingReader::from_fd(file).unwrap();
     commands.insert_resource(DevInput {
         nb_dev_input,

@@ -4,57 +4,46 @@ use input_linux_tools::device::*;
 use serde::{Deserialize, Serialize};
 use std::{env::current_dir, fs, path::PathBuf};
 
-#[derive(Resource, Debug, Serialize, Deserialize)]
-pub struct ConfigInput {
-    pub pos_input: Option<Device>,
-    pub aim_input: Option<Device>,
-    pub path: PathBuf,
+// Input configuration for one player
+// None indicates that the input is not yet bound
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct PlayerInput {
+    pub pos_input: Device,
+    pub aim_input: Device,
 }
 
-#[derive(Resource, Debug)]
-pub struct InputDevices {
-    pub devices: Devices,
+// Input configuration for all players
+// Vector index connesponds to Player(index)
+#[derive(Resource, Debug, Serialize, Deserialize, Default)]
+pub struct PlayersInput {
+    pub player_input: Vec<PlayerInput>,
+    pub config_path: PathBuf,
 }
 
 pub fn setup(mut commands: Commands) {
-    let devices = Devices::new().unwrap();
-    commands.insert_resource(InputDevices { devices });
-
+    // default location for configuation
     let mut path = current_dir().unwrap();
     path.push("input_cfg");
     path.set_extension("ron");
 
-    let mut config_input = ConfigInput {
-        pos_input: None,
-        aim_input: None,
-        path: path.clone(),
-    };
+    let mut players_input = PlayersInput::default();
+    players_input.config_path = path;
 
-    if path.exists() {
-        if let Ok(bytes) = fs::read(path) {
-            let ron: Result<ConfigInput, _> = ron::de::from_bytes(&bytes);
-            match ron {
-                Ok(ron_config) => config_input = ron_config,
-                _ => {}
-            }
-        }
-    }
-    println!("config_input :{:?}", config_input);
-    commands.insert_resource(config_input);
-    let mut inputs = vec![];
+    // setup each player
     for _ in 0..NR_PLAYERS {
-        inputs.push(Input::default());
+        players_input.player_input.push(PlayerInput::default());
     }
-    commands.insert_resource(Inputs { inputs });
-}
 
-#[derive(Debug, Default)]
-pub struct Input {
-    pub pos_input: Option<DeviceType>,
-    pub aim_input: Option<DeviceType>,
-}
-
-#[derive(Resource, Default, Debug)]
-pub struct Inputs {
-    pub inputs: Vec<Input>,
+    // load default config
+    // if path.exists() {
+    //     if let Ok(bytes) = fs::read(path) {
+    //         let ron: Result<ConfigInput, _> = ron::de::from_bytes(&bytes);
+    //         match ron {
+    //             Ok(ron_config) => config_input = ron_config,
+    //             _ => {}
+    //         }
+    //     }
+    // }
+    debug!("config_input :{:?}", players_input);
+    commands.insert_resource(players_input);
 }

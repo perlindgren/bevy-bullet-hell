@@ -3,10 +3,16 @@ use bevy::{prelude::*, window::WindowResolution};
 use bevy_egui::{egui, EguiContext};
 use input_linux_tools::{device::*, keyboard::*, mouse::*};
 use rfd::FileDialog;
-use std::fs;
+use std::{fs, path::PathBuf};
 
 #[derive(Component)]
 pub struct EditorCfgWindow;
+
+// Used by the gui to select input device
+#[derive(Resource, Debug)]
+pub struct InputDevices {
+    pub devices: Devices,
+}
 
 pub fn setup(mut commands: Commands) {
     commands.spawn((
@@ -18,74 +24,21 @@ pub fn setup(mut commands: Commands) {
         },
         EditorCfgWindow,
     ));
+
+    // populate the input devices
+    let devices = Devices::new().unwrap();
+    commands.insert_resource(InputDevices { devices });
 }
 
-fn select_device(ui: &mut egui::Ui, devices: &Devices, input: &mut Option<Device>) {
-    egui::ComboBox::from_label(format!("Input"))
-        .selected_text(format!("{:?}", input))
-        .show_ui(ui, |ui| {
-            if ui.button("Select None").clicked() {
-                *input = None;
-            }
-            ui.separator();
-            ui.label("Mouse Devices");
-            for i in 0..devices.mice.len() {
-                let value = ui.selectable_value(
-                    input,
-                    Some(Device::Mouse(devices.mice[i].clone())),
-                    devices.mice[i].to_str().unwrap(),
-                );
-                if value.clicked() {
-                    *input = Some(Device::Mouse(devices.mice[i].clone()));
-                }
-            }
-            ui.separator();
-            ui.label("Keyboard Devices");
-            for i in 0..devices.keyboards.len() {
-                let value = ui.selectable_value(
-                    input,
-                    Some(Device::Keyboard(devices.keyboards[i].clone())),
-                    devices.keyboards[i].to_str().unwrap(),
-                );
-                if value.clicked() {
-                    *input = Some(Device::Keyboard(devices.keyboards[i].clone()));
-                }
-            }
-            ui.separator();
-            ui.label("Gamepad Devices");
-            for i in 0..devices.gamepads.len() {
-                let value = ui.selectable_value(
-                    input,
-                    Some(Device::GamePad(devices.gamepads[i].clone())),
-                    devices.gamepads[i].to_str().unwrap(),
-                );
-                if value.clicked() {
-                    *input = Some(Device::GamePad(devices.gamepads[i].clone()));
-                }
-            }
-        });
-}
-
-fn select_devices(ui: &mut egui::Ui, config_input: &mut ConfigInput, devices: &Devices) {
-    let ConfigInput {
-        pos_input,
-        aim_input,
-        path: _,
-    } = config_input; // reborrow
-    ui.label("Player");
-
-    // let InputDevices { devices } = &*input_devices_r;
-
-    egui::CollapsingHeader::new("Pos").show(ui, |ui| {
-        select_device(ui, devices, pos_input);
-    });
-    egui::CollapsingHeader::new("Aim").show(ui, |ui| {
-        select_device(ui, devices, aim_input);
-    });
+fn split_path(config_path: &PathBuf) -> (&std::path::Path, &str) {
+    (
+        config_path.parent().unwrap(),
+        config_path.file_name().unwrap().to_str().unwrap(),
+    )
 }
 
 pub fn update_system(
-    mut config_input_r: ResMut<ConfigInput>,
+    mut config_input_r: ResMut<PlayersInput>,
     //mut inputs_r: ResMut<Inputs>,
     input_devices_r: Res<InputDevices>,
     mut egui_q: Query<&mut EguiContext, With<EditorCfgWindow>>,
@@ -95,35 +48,49 @@ pub fn update_system(
     egui::Window::new("Player Input Configuration").show(egui_context.get_mut(), |ui| {
         ui.horizontal(|ui| {
             if ui.button("Save Config").clicked() {
-                if let Some(path) = FileDialog::new()
+                let (cfg_path, file_name) = split_path(&config_input_r.config_path);
+                if let Some(selected_path) = FileDialog::new()
                     .add_filter("ron", &["ron"])
-                    .set_directory(config_input_r.path.parent().unwrap())
-                    .set_file_name(config_input_r.path.file_name().unwrap().to_str().unwrap())
+                    .set_title("Save input configuration")
+                    .set_directory(cfg_path)
+                    .set_file_name(file_name)
                     .save_file()
                 {
                     // update path in case changed
-                    config_input_r.path = path.clone();
-                    let str = ron::ser::to_string_pretty(
+                    config_input_r.config_path = selected_path.clone();
+
+                    // serialize and write to file
+                    let serialized_str = ron::ser::to_string_pretty(
                         &*config_input_r,
                         ron::ser::PrettyConfig::default(),
                     )
                     .unwrap();
-                    let _ = fs::write(path, str);
+                    let _ = fs::write(selected_path, serialized_str);
                 }
             };
 
             if ui.button("Load Config").clicked() {
-                if let Some(path) = FileDialog::new()
+                let (cfg_path, file_name) = split_path(&config_input_r.config_path);
+                debug!(
+                    "load config from folder: {:?}, file: {:?}",
+                    cfg_path, file_name
+                );
+                let os_str = config_input_r.config_path.as_os_str().to_str().unwrap();
+                debug!("os_str {}", os_str);
+                if let Some(selected_path) = FileDialog::new()
                     .add_filter("ron", &["ron"])
-                    .set_directory(config_input_r.path.parent().unwrap())
-                    .set_file_name(config_input_r.path.file_name().unwrap().to_str().unwrap())
+                    .set_title("Load input configuration")
+                    .set_directory(cfg_path)
+                    .set_file_name(file_name)
                     .pick_file()
                 {
-                    if let Ok(bytes) = fs::read(path) {
-                        let ron: Result<ConfigInput, _> = ron::de::from_bytes(&bytes);
+                    if let Ok(bytes) = fs::read(&selected_path) {
+                        let ron: Result<PlayersInput, _> = ron::de::from_bytes(&bytes);
                         match ron {
-                            Ok(player_input) => {
-                                *config_input_r = player_input;
+                            Ok(players_input) => {
+                                debug!("configuration loaded: {:?}", selected_path);
+                                debug!("{:?}", players_input);
+                                *config_input_r = players_input;
                             }
                             _ => {}
                         }
@@ -131,16 +98,63 @@ pub fn update_system(
                 }
             };
         });
-        // for (index, input) in inputs_r.inputs.iter().enumerate() {
-        //         if ui
-        //             .radio(
-        //                 input.pos_input.is_some(),
-        //                 format!("Pos :{:?}", input.pos_input),
-        //             )
-        //             .clicked()
-        //         {
-        //             input.pos_input = DeviceType::connect(&config_input_r.pos_input);
-        //         }
-        select_devices(ui, &mut *config_input_r, &input_devices_r.devices);
+        for (index, player_input) in config_input_r.player_input.iter_mut().enumerate() {
+            let PlayerInput {
+                pos_input,
+                // aim_input,
+                ..
+            } = player_input;
+
+            ui.label(format!("Player {}", index));
+
+            select_device(ui, &input_devices_r.devices, pos_input);
+        }
     });
+}
+
+fn select_device(ui: &mut egui::Ui, devices: &Devices, input: &mut Device) {
+    egui::ComboBox::from_label(format!("Input"))
+        .selected_text(format!("{:?} {:?}", input.device_type, input.path))
+        .show_ui(ui, |ui| {
+            ui.label("Mouse Devices");
+            for i in 0..devices.mice.len() {
+                let value = ui.selectable_value(
+                    &mut input.path,
+                    devices.mice[i].clone(),
+                    devices.mice[i].to_str().unwrap(),
+                );
+                if value.clicked() {
+                    input.path = devices.mice[i].clone();
+                    input.device_type = DeviceType::Mouse;
+                }
+            }
+
+            ui.separator();
+            ui.label("Keyboard Devices");
+            for i in 0..devices.keyboards.len() {
+                let value = ui.selectable_value(
+                    &mut input.path,
+                    devices.keyboards[i].clone(),
+                    devices.keyboards[i].to_str().unwrap(),
+                );
+                if value.clicked() {
+                    input.path = devices.keyboards[i].clone();
+                    input.device_type = DeviceType::Keyboard;
+                }
+            }
+
+            ui.separator();
+            ui.label("GamePad Devices");
+            for i in 0..devices.gamepads.len() {
+                let value = ui.selectable_value(
+                    &mut input.path,
+                    devices.gamepads[i].clone(),
+                    devices.gamepads[i].to_str().unwrap(),
+                );
+                if value.clicked() {
+                    input.path = devices.gamepads[i].clone();
+                    input.device_type = DeviceType::GamePad;
+                }
+            }
+        });
 }
