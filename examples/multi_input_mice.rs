@@ -2,7 +2,7 @@
 use bevy::prelude::*;
 use bevy_bullet_hell::{input_cfg, ui_egui_cfg};
 use bevy_inspector_egui::DefaultInspectorConfigPlugin;
-use input_linux_tools::mouse::*;
+use input_linux_tools::{device::*, mouse::*};
 
 fn main() {
     App::new()
@@ -36,53 +36,45 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
 
     let texture = asset_server.load("sprites/cross.png");
-    commands.spawn((
-        Player(0),
-        SpriteBundle {
-            texture: texture.clone(),
-            ..default()
-        },
-    ));
 
-    commands.spawn((
-        Player(1),
-        SpriteBundle {
-            texture,
-            ..default()
-        },
-    ));
-
-    let mut mice = vec![];
-    // mice.push(Mouse::new_first_match("Contour", false).unwrap());
-    // mice.push(Mouse::new_first_match("Pulsefire", false).unwrap());
-    commands.insert_resource(Mice { mice });
-}
-
-#[derive(Resource)]
-pub struct Mice {
-    pub mice: Vec<Mouse>,
+    for i in 0..1 {
+        commands.spawn((
+            Player(i),
+            SpriteBundle {
+                texture: texture.clone(),
+                ..default()
+            },
+        ));
+    }
 }
 
 pub fn update_system(
     time: Res<Time>,
-    mice_input: Res<Mice>,
+    inputs_r: Res<input_cfg::Inputs>,
     mut player_q: Query<(&mut Transform, &Player)>,
 ) {
     let speed = 50.0;
     let time_speed_delta = time.delta_seconds() * speed;
-    for (index, mouse) in mice_input.mice.iter().enumerate() {
-        while let Some(event) = mouse.read() {
-            match event {
-                MouseEvent::MotionEvent(motion) => {
-                    if let Some((mut t, _)) =
-                        player_q.iter_mut().find(|(_t, Player(nr))| (*nr == index))
-                    {
-                        t.translation.x += motion.delta.x * time_speed_delta;
-                        t.translation.y -= motion.delta.y * time_speed_delta; // evdev delta in other direction
+    // for (index, mouse) in mice_input.mice.iter().enumerate() {
+    if let Some(input) = &inputs_r.pos_input {
+        match input {
+            DeviceType::Mouse(mouse, _) => {
+                while let Some(event) = mouse.read() {
+                    match event {
+                        MouseEvent::MotionEvent(motion) => {
+                            if let Some((mut t, _)) =
+                                player_q.iter_mut().find(|(_t, Player(nr))| (*nr == 0))
+                            {
+                                t.translation.x += motion.delta.x * time_speed_delta;
+                                t.translation.y -= motion.delta.y * time_speed_delta;
+                                // evdev delta in other direction
+                            }
+                        }
+                        _ => {}
                     }
                 }
-                _ => {}
             }
+            _ => {}
         }
     }
 }
