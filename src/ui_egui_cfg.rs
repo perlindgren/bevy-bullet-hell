@@ -1,6 +1,9 @@
-use crate::input_cfg::*;
+use crate::{common::NR_PLAYERS, input_cfg::*};
 use bevy::{prelude::*, window::WindowResolution};
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{
+    egui::{self, Color32},
+    EguiContext,
+};
 use input_linux_tools::{device::*, keyboard::*, mouse::*};
 use rfd::FileDialog;
 use std::{fs, path::PathBuf};
@@ -39,7 +42,6 @@ fn split_path(config_path: &PathBuf) -> (&std::path::Path, &str) {
 
 pub fn update_system(
     mut config_input_r: ResMut<PlayersInput>,
-    //mut inputs_r: ResMut<Inputs>,
     input_devices_r: Res<InputDevices>,
     mut egui_q: Query<&mut EguiContext, With<EditorCfgWindow>>,
 ) {
@@ -87,9 +89,10 @@ pub fn update_system(
                     if let Ok(bytes) = fs::read(&selected_path) {
                         let ron: Result<PlayersInput, _> = ron::de::from_bytes(&bytes);
                         match ron {
-                            Ok(players_input) => {
+                            Ok(mut players_input) => {
                                 debug!("configuration loaded: {:?}", selected_path);
                                 debug!("{:?}", players_input);
+                                players_input.connect();
                                 *config_input_r = players_input;
                             }
                             _ => {}
@@ -98,23 +101,53 @@ pub fn update_system(
                 }
             };
         });
+        ui.label(format!(
+            "Config path: {}",
+            config_input_r.config_path.display()
+        ));
+        ui.add_space(10.0);
         for (index, player_input) in config_input_r.player_input.iter_mut().enumerate() {
             let PlayerInput {
                 pos_input,
-                // aim_input,
+                aim_input,
                 ..
             } = player_input;
-
-            ui.label(format!("Player {}", index));
-
-            select_device(ui, &input_devices_r.devices, pos_input);
+            ui.separator();
+            ui.label(format!("Player #{}", index));
+            select_device(ui, &input_devices_r.devices, pos_input, "Position", index);
+            select_device(
+                ui,
+                &input_devices_r.devices,
+                aim_input,
+                "Aim",
+                index + NR_PLAYERS,
+            );
         }
     });
 }
 
-fn select_device(ui: &mut egui::Ui, devices: &Devices, input: &mut Device) {
-    egui::ComboBox::from_label(format!("Input"))
-        .selected_text(format!("{:?} {:?}", input.device_type, input.path))
+fn select_device(
+    ui: &mut egui::Ui,
+    devices: &Devices,
+    input: &mut Device,
+    text: &str,
+    salt: usize,
+) {
+    ui.colored_label(
+        if input.evdev.is_some() {
+            Color32::WHITE
+        } else {
+            Color32::RED
+        },
+        format!(
+            "{} control: {:?} Connected: {}",
+            text,
+            input.device_type,
+            input.evdev.is_some()
+        ),
+    );
+    egui::ComboBox::from_id_salt(salt)
+        .selected_text(format!("{}", input.path.display()))
         .show_ui(ui, |ui| {
             ui.label("Mouse Devices");
             for i in 0..devices.mice.len() {
@@ -126,6 +159,7 @@ fn select_device(ui: &mut egui::Ui, devices: &Devices, input: &mut Device) {
                 if value.clicked() {
                     input.path = devices.mice[i].clone();
                     input.device_type = DeviceType::Mouse;
+                    input.connect();
                 }
             }
 
@@ -140,6 +174,7 @@ fn select_device(ui: &mut egui::Ui, devices: &Devices, input: &mut Device) {
                 if value.clicked() {
                     input.path = devices.keyboards[i].clone();
                     input.device_type = DeviceType::Keyboard;
+                    input.connect();
                 }
             }
 
@@ -154,6 +189,7 @@ fn select_device(ui: &mut egui::Ui, devices: &Devices, input: &mut Device) {
                 if value.clicked() {
                     input.path = devices.gamepads[i].clone();
                     input.device_type = DeviceType::GamePad;
+                    input.connect();
                 }
             }
         });

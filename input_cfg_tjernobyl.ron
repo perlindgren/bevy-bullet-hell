@@ -1,0 +1,25 @@
+(
+    player_input: [
+        (
+            pos_input: (
+                path: "/dev/input/by-id/usb-Kingston_Technology_Company_HyperX_Pulsefire_FPS_Pro-event-mouse",
+                device_type: Mouse,
+            ),
+            aim_input: (
+                path: "/dev/input/by-id/usb-Contour_Design_RollerMouse_Re:d-event-mouse",
+                device_type: Mouse,
+            ),
+        ),
+        (
+            pos_input: (
+                path: "/dev/input/by-id/usb-Razer_Razer_BlackWidow_V3_Tenkeyless-if01-event-kbd",
+                device_type: Keyboard,
+            ),
+            aim_input: (
+                path: "/dev/input/by-id/usb-Contour_Design_RollerMouse_Re:d-event-mouse",
+                device_type: Mouse,
+            ),
+        ),
+    ],
+    config_path: "/run/media/pln/VM/rust/bevy-bullet-hell/input_cfg.ron",
+)

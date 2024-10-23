@@ -20,6 +20,15 @@ pub struct PlayersInput {
     pub config_path: PathBuf,
 }
 
+impl PlayersInput {
+    pub fn connect(&mut self) {
+        for player_input in self.player_input.iter_mut() {
+            player_input.pos_input.connect();
+            player_input.aim_input.connect();
+        }
+    }
+}
+
 pub fn setup(mut commands: Commands) {
     // default location for configuation
     let mut path = current_dir().unwrap();
@@ -27,7 +36,7 @@ pub fn setup(mut commands: Commands) {
     path.set_extension("ron");
 
     let mut players_input = PlayersInput::default();
-    players_input.config_path = path;
+    players_input.config_path = path.clone();
 
     // setup each player
     for _ in 0..NR_PLAYERS {
@@ -35,15 +44,18 @@ pub fn setup(mut commands: Commands) {
     }
 
     // load default config
-    // if path.exists() {
-    //     if let Ok(bytes) = fs::read(path) {
-    //         let ron: Result<ConfigInput, _> = ron::de::from_bytes(&bytes);
-    //         match ron {
-    //             Ok(ron_config) => config_input = ron_config,
-    //             _ => {}
-    //         }
-    //     }
-    // }
+    if path.exists() {
+        if let Ok(bytes) = fs::read(path) {
+            let ron: Result<PlayersInput, _> = ron::de::from_bytes(&bytes);
+            match ron {
+                Ok(ron_config) => {
+                    players_input = ron_config;
+                    players_input.connect();
+                }
+                _ => {}
+            }
+        }
+    }
     debug!("config_input :{:?}", players_input);
     commands.insert_resource(players_input);
 }
