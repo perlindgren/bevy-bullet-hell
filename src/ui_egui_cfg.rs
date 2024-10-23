@@ -113,8 +113,10 @@ pub fn update_system(
                 ..
             } = player_input;
             ui.separator();
-            ui.label(format!("Player #{}", index));
+            ui.heading(format!("Player #{}", index));
+            ui.add_space(10.0);
             select_device(ui, &input_devices_r.devices, pos_input, "Position", index);
+            ui.add_space(10.0);
             select_device(
                 ui,
                 &input_devices_r.devices,
@@ -146,15 +148,16 @@ fn select_device(
             input.evdev.is_some()
         ),
     );
+
     egui::ComboBox::from_id_salt(salt)
-        .selected_text(format!("{}", input.path.display()))
+        .selected_text(file_name_to_str(&input.path))
         .show_ui(ui, |ui| {
             ui.label("Mouse Devices");
             for i in 0..devices.mice.len() {
                 let value = ui.selectable_value(
                     &mut input.path,
                     devices.mice[i].clone(),
-                    devices.mice[i].to_str().unwrap(),
+                    file_name_to_str(&devices.mice[i]),
                 );
                 if value.clicked() {
                     input.path = devices.mice[i].clone();
@@ -169,7 +172,7 @@ fn select_device(
                 let value = ui.selectable_value(
                     &mut input.path,
                     devices.keyboards[i].clone(),
-                    devices.keyboards[i].to_str().unwrap(),
+                    file_name_to_str(&devices.keyboards[i]),
                 );
                 if value.clicked() {
                     input.path = devices.keyboards[i].clone();
@@ -184,7 +187,7 @@ fn select_device(
                 let value = ui.selectable_value(
                     &mut input.path,
                     devices.gamepads[i].clone(),
-                    devices.gamepads[i].to_str().unwrap(),
+                    file_name_to_str(&devices.gamepads[i]),
                 );
                 if value.clicked() {
                     input.path = devices.gamepads[i].clone();
@@ -193,4 +196,23 @@ fn select_device(
                 }
             }
         });
+}
+
+fn file_name_to_str(path_buf: &PathBuf) -> &str {
+    path_buf
+        .file_name()
+        .map_or("", |p| p.to_str().map_or("", |p| p))
+}
+
+#[cfg(test)]
+mod test {
+    use std::str::FromStr;
+
+    use super::*;
+
+    #[test]
+    fn test_pretty_path() {
+        let path = PathBuf::from_str("/dev/input/by-id/abcd").unwrap();
+        assert_eq!("abcd", file_name_to_str(&path));
+    }
 }
