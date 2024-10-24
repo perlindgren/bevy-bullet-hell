@@ -1,6 +1,6 @@
 // mouse events
-use bevy::prelude::*;
-use bevy_bullet_hell::{common::NR_PLAYERS, input_cfg, ui_egui_cfg};
+use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
+use bevy_bullet_hell::{common::NR_PLAYERS, hud::fps, input_cfg, ui_egui_cfg};
 use bevy_inspector_egui::DefaultInspectorConfigPlugin;
 use input_linux_tools::{
     device::*,
@@ -28,10 +28,21 @@ fn main() {
             bevy_framepace::FramepacePlugin,
             bevy_egui::EguiPlugin,
             DefaultInspectorConfigPlugin,
+            FrameTimeDiagnosticsPlugin,
         ))
         .insert_resource(ClearColor(Color::BLACK))
-        .add_systems(Startup, (setup, input_cfg::setup, ui_egui_cfg::setup))
-        .add_systems(Update, (update_system, ui_egui_cfg::update_system))
+        .add_systems(
+            Startup,
+            (setup, input_cfg::setup, ui_egui_cfg::setup, fps::setup),
+        )
+        .add_systems(
+            Update,
+            (
+                update_system,
+                ui_egui_cfg::update_system,
+                fps::update_system,
+            ),
+        )
         .run();
 }
 
