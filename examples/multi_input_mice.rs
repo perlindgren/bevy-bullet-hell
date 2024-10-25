@@ -74,33 +74,30 @@ pub fn update_system(
     mut player_q: Query<(&mut Transform, &mut Player)>,
 ) {
     for (index, input) in players_input_r.player_input.iter().enumerate() {
-        match &input.pos_input.evdev {
-            Some(EvDev::Mouse(mouse)) => {
-                let speed = 50.0;
-                let time_speed_delta = time.delta_seconds() * speed;
+        if let Some((mut t, mut player)) =
+            player_q.iter_mut().find(|(_, player)| (player.id == index))
+        {
+            match &input.pos_input.evdev {
+                Some(EvDev::Mouse(mouse)) => {
+                    let speed = 50.0;
+                    let time_speed_delta = time.delta_seconds() * speed;
 
-                // check if the player is connected to mouse
-                if let Some((mut t, _)) =
-                    player_q.iter_mut().find(|(_, player)| (player.id == index))
-                {
-                    // yes connected
                     while let Some(event) = mouse.read() {
                         match event {
-                            MouseEvent::MotionEvent(motion) => {
-                                t.translation.x += motion.delta.x * time_speed_delta;
-                                t.translation.y -= motion.delta.y * time_speed_delta;
-                                // evdev delta in other direction
+                            MouseEvent::MotionX(delta) => {
+                                t.translation.x += delta * time_speed_delta
                             }
+
+                            MouseEvent::MotionY(delta) => {
+                                t.translation.y -= delta * time_speed_delta
+                            }
+                            // evdev delta in other direction
                             _ => {}
                         }
                     }
                 }
-            }
 
-            Some(EvDev::Keyboard(keyboard)) => {
-                if let Some((mut t, mut player)) =
-                    player_q.iter_mut().find(|(_, player)| (player.id == index))
-                {
+                Some(EvDev::Keyboard(keyboard)) => {
                     // read events, and store their status
                     while let Some(KeyboardEvent { key, status }) = keyboard.read() {
                         player.keys_pressed.insert(key, status);
@@ -133,8 +130,9 @@ pub fn update_system(
                     t.translation.x += time_speed_delta
                         * (if right { 1.0 } else { 0.0 } - if left { 1.0 } else { 0.0 });
                 }
+                Some(EvDev::GamePad) => {}
+                _ => {}
             }
-            _ => {}
         }
     }
 }
