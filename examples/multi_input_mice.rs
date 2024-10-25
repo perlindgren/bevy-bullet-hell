@@ -130,8 +130,12 @@ pub fn update_system(
                     t.translation.x += time_speed_delta
                         * (if right { 1.0 } else { 0.0 } - if left { 1.0 } else { 0.0 });
                 }
-                Some(EvDev::GamePad) => {}
-                _ => {}
+                Some(EvDev::GamePad(gamepad)) => {
+                    while let Some(event) {
+                    _ =>
+                    }
+                }
+                None => {}
             }
         }
     }

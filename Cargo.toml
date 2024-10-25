@@ -36,7 +36,7 @@ heapless = { version = "0.8.0", features = ["mpmc_large"] }
 
 
 nonblock = "0.2.0"
-#input-linux-tools = { git = "https://github.com/perlindgren/input-linux-tools.git" }
+# input-linux-tools = { git = "https://github.com/perlindgren/input-linux-tools.git" }
 
 input-linux-tools = { path = "../input-linux-tools" }
 # bevy = { version = "0.14.2" }
